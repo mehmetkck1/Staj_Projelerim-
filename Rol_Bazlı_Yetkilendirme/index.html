@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RBAC Yönetim Paneli</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="auth-shell" id="loginPage">
+    <section class="auth-visual" aria-label="RBAC yönetim özeti">
+      <div class="brand-mark">RB</div>
+      <div>
+        <p class="eyebrow light">Erişim kontrol merkezi</p>
+        <h1>Rol bazlı yetkilendirme paneli</h1>
+        <p class="auth-copy">
+          Kullanıcı ekleme, rol atama ve erişim durumlarını tek ekranda takip etmek için hazırlanmış sade bir yönetim arayüzü.
+        </p>
+      </div>
+      <div class="signal-grid">
+        <div>
+          <span>Panel modu</span>
+          <strong>Admin / Kullanıcı</strong>
+        </div>
+        <div>
+          <span>Rol takibi</span>
+          <strong>Canlı</strong>
+        </div>
+        <div>
+          <span>Erişim durumu</span>
+          <strong>Aktif</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="login-card" aria-labelledby="loginTitle">
+      <p class="eyebrow">RBAC Panel</p>
+      <h2 id="loginTitle">Giriş Yap</h2>
+
+      <form id="loginForm" class="stacked-form">
+        <label for="user">Kullanıcı adı</label>
+        <input id="user" autocomplete="username" placeholder="Kullanıcı adınızı girin">
+
+        <label for="pass">Şifre</label>
+        <input id="pass" type="password" autocomplete="current-password" placeholder="Şifrenizi girin">
+
+        <button class="primary-button" type="submit">Giriş Yap</button>
+      </form>
+    </section>
+  </main>
+
+  <div class="app-shell hidden" id="panel">
+    <aside class="sidebar" aria-label="Ana menü">
+      <div>
+        <div class="sidebar-brand">
+          <div class="brand-mark small">RB</div>
+          <div>
+            <strong>RBAC Panel</strong>
+            <span id="panelMode">Yönetim alanı</span>
+          </div>
+        </div>
+
+        <nav id="mainNav"></nav>
+      </div>
+
+      <button class="ghost-button" id="logoutButton" type="button">Çıkış Yap</button>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" id="pageEyebrow">Dashboard</p>
+          <h1 id="pageTitle">Kontrol Paneli</h1>
+        </div>
+        <div class="admin-chip">
+          <span id="sessionRole">Rol</span>
+          <strong id="sessionUser">Kullanıcı</strong>
+        </div>
+      </header>
+
+      <section class="view active" id="adminDashboard" data-view="dashboard">
+        <section class="metric-grid">
+          <article class="metric-card">
+            <span>Toplam kullanıcı</span>
+            <strong id="totalUsers">0</strong>
+            <small>Sistemde kayıtlı hesap</small>
+          </article>
+          <article class="metric-card">
+            <span>Admin</span>
+            <strong id="adminCount">0</strong>
+            <small>Tam yetkili kullanıcı</small>
+          </article>
+          <article class="metric-card">
+            <span>Editör</span>
+            <strong id="editorCount">0</strong>
+            <small>İçerik yetkisi</small>
+          </article>
+          <article class="metric-card">
+            <span>Standart kullanıcı</span>
+            <strong id="memberCount">0</strong>
+            <small>Temel erişim</small>
+          </article>
+        </section>
+
+        <section class="activity-band">
+          <div>
+            <p class="eyebrow">Sistem özeti</p>
+            <h2>Yetki dağılımı güncel kullanıcı listesine göre hesaplanır.</h2>
+          </div>
+          <div class="role-bars" id="roleBars"></div>
+        </section>
+      </section>
+
+      <section class="view" id="adminUsers" data-view="users">
+        <section class="content-grid">
+          <article class="panel-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Kullanıcı işlemleri</p>
+                <h2>Kullanıcı Ekle</h2>
+              </div>
+              <span class="status-pill">Aktif kayıt</span>
+            </div>
+
+            <form class="stacked-form" id="userForm">
+              <label for="newUsername">Kullanıcı adı</label>
+              <input id="newUsername" required placeholder="Kullanıcı adı">
+
+              <label for="newEmail">E-posta</label>
+              <input id="newEmail" type="email" required placeholder="E-posta adresi">
+
+              <label for="newPassword">Geçici şifre</label>
+              <input id="newPassword" type="password" required minlength="6" placeholder="En az 6 karakter">
+
+              <label for="newRole">Rol</label>
+              <select id="newRole" required>
+                <option value="Admin">Admin</option>
+                <option value="Editör">Editör</option>
+                <option value="Kullanıcı" selected>Kullanıcı</option>
+                <option value="Denetçi">Denetçi</option>
+              </select>
+
+              <button class="primary-button" type="submit">Kullanıcı Oluştur</button>
+            </form>
+          </article>
+
+          <article class="panel-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Ekip listesi</p>
+                <h2>Kullanıcılar</h2>
+              </div>
+              <input class="search-input" id="searchInput" placeholder="Ara">
+            </div>
+
+            <div class="table-wrap compact-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Kullanıcı</th>
+                    <th>Rol</th>
+                    <th>Durum</th>
+                  </tr>
+                </thead>
+                <tbody id="userTable"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <section class="view" id="adminRoles" data-view="roles">
+        <section class="content-grid">
+          <article class="panel-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Rol yönetimi</p>
+                <h2>Rol Ata</h2>
+              </div>
+            </div>
+
+            <form class="inline-form" id="roleForm">
+              <select id="roleUser" aria-label="Kullanıcı seç"></select>
+              <select id="roleSelect" aria-label="Rol seç">
+                <option>Admin</option>
+                <option>Editör</option>
+                <option>Kullanıcı</option>
+                <option>Denetçi</option>
+              </select>
+              <button class="secondary-button" type="submit">Güncelle</button>
+            </form>
+          </article>
+
+          <article class="panel-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Yetki kapsamları</p>
+                <h2>Rol Detayları</h2>
+              </div>
+            </div>
+
+            <div class="permission-list">
+              <div><span>Admin</span><strong>Tüm sistem ayarları ve kullanıcı yönetimi</strong></div>
+              <div><span>Editör</span><strong>İçerik oluşturma ve düzenleme</strong></div>
+              <div><span>Kullanıcı</span><strong>Kendi panelini görüntüleme</strong></div>
+              <div><span>Denetçi</span><strong>Rapor ve kayıt görüntüleme</strong></div>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <section class="view" id="userHome" data-view="home">
+        <section class="user-hero">
+          <div>
+            <p class="eyebrow light">Kullanıcı paneli</p>
+            <h2>Hoş geldiniz, <span id="memberName">Kullanıcı</span></h2>
+            <p>Bu ekranda yalnızca kendi erişim durumunuzu ve size tanımlanan rol kapsamını görüntüleyebilirsiniz.</p>
+          </div>
+          <div class="user-role-card">
+            <span>Mevcut rol</span>
+            <strong id="memberRole">Kullanıcı</strong>
+          </div>
+        </section>
+
+        <section class="metric-grid three">
+          <article class="metric-card">
+            <span>Hesap durumu</span>
+            <strong id="memberStatus">Aktif</strong>
+            <small>Oturum açık</small>
+          </article>
+          <article class="metric-card">
+            <span>Erişim seviyesi</span>
+            <strong id="memberAccess">Temel</strong>
+            <small>Rol bazlı görünüm</small>
+          </article>
+          <article class="metric-card">
+            <span>Panel tipi</span>
+            <strong>Kullanıcı</strong>
+            <small>Sınırlı yetki</small>
+          </article>
+        </section>
+
+        <article class="panel-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Yetkilerim</p>
+              <h2>Rol Kapsamı</h2>
+            </div>
+          </div>
+          <div class="permission-list" id="memberPermissions"></div>
+        </article>
+      </section>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

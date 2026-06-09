@@ -1,0 +1,1314 @@
+const ComponentFunction = function() {
+  // @section:imports @depends:[]
+const React = require('react');
+const { useState, useEffect, useContext, useMemo, useCallback, useRef } = React;
+const { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView, TextInput, Modal, Alert, Platform, StatusBar, ActivityIndicator, KeyboardAvoidingView, Dimensions } = require('react-native');
+const { MaterialIcons } = require('@expo/vector-icons');
+const { createBottomTabNavigator } = require('@react-navigation/bottom-tabs');
+const { createStackNavigator } = require('@react-navigation/stack');
+const { useSafeAreaInsets } = require('react-native-safe-area-context');
+const { useQuery, useMutation } = require('platform-hooks');
+const { useAudio } = require('platform-hooks');
+const { useShare } = require('platform-hooks');
+const { useFilePicker } = require('platform-hooks');
+// @end:imports
+
+  // @section:theme @depends:[]
+const primaryColor = '#2E5090';
+const accentColor = '#5B8DEE';
+const backgroundColor = '#F0F4FF';
+const cardColor = '#FFFFFF';
+const textPrimary = '#1A1A2E';
+const textSecondary = '#5A6A8A';
+const designStyle = 'glassmorphic';
+const TAB_MENU_HEIGHT = Platform.OS === 'web' ? 56 : 49;
+const SCROLL_EXTRA_PADDING = 16;
+const WEB_TAB_MENU_PADDING = 90;
+const FAB_SPACING = 16;
+const HEADER_HEIGHT = 60;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Turkish translations
+const TR = {
+  home: 'Ana Sayfa',
+  library: 'Kayıtlar',
+  backups: 'Yedekler',
+  settings: 'Ayarlar',
+  favorites: 'Favoriler',
+  recentRecordings: 'Son Kayıtlar',
+  delete: 'Sil',
+  rename: 'Yeniden Adlandır',
+  share: 'Paylaş',
+  save: 'Kaydet',
+  cancel: 'İptal',
+  search: 'Ara',
+  storageUsed: 'Kullanılan Depolama',
+  recordingDuration: 'Kayıt Süresi',
+  recordings: 'Kayıtlar',
+  totalTime: 'Toplam Süre',
+  storage: 'Depolama',
+  noRecordings: 'Henüz kayıt yok',
+  tapMicToStart: 'Başlamak için mikrofon düğmesine dokunun',
+  lastBackup: 'Son Yedek',
+  ok: 'Tamam',
+  seeAll: 'Tümünü Gör',
+  newFolder: 'Yeni Klasör',
+  folderName: 'Klasör adı',
+  color: 'Renk',
+  create: 'Oluştur',
+  allRecordings: 'Tüm Kayıtlar',
+  folders: 'Klasörler',
+  noResults: 'Sonuç bulunamadı',
+  noFolders: 'Henüz klasör yok',
+  createFolder: 'Klasör Oluştur',
+  sortBy: 'Sırala',
+  newestFirst: 'En Yeni Önce',
+  oldestFirst: 'En Eski Önce',
+  longestFirst: 'En Uzun Önce',
+  shortestFirst: 'En Kısa Önce',
+  alphabetical: 'Alfabetik',
+  deleteRecording: 'Kayıt Sil',
+  deleteFolder: 'Klasörü Sil',
+  renameRecording: 'Kayıt Yeniden Adlandır',
+  recordingTitle: 'Kayıt başlığı',
+  folder: 'Klasör',
+  optional: 'İsteğe Bağlı',
+  none: 'Hiçbiri',
+  discard: 'Vazgeç',
+  duration: 'Süre',
+  backupHistory: 'Yedek Geçmişi',
+  noBackups: 'Henüz yedek yok',
+  createBackup: 'Yedek Oluştur',
+  import: 'İçe Aktar',
+  creating: 'Oluşturuluyor...',
+  loading: 'Yükleniyor...',
+  backupCreated: 'Yedek Oluşturuldu',
+  backupImported: 'Yedek İçe Aktarıldı',
+  storageOverview: 'Depolama Özeti',
+  files: 'dosya',
+  totalSize: 'Toplam Boyut',
+  totalTime: 'Toplam Süre',
+  appearance: 'Görünüm',
+  darkMode: 'Koyu Mod',
+  currentlyEnabled: 'Şu anda etkin',
+  currentlyDisabled: 'Şu anda devre dışı',
+  recording: 'Kayıt',
+  autoSaveRecordings: 'Kayıtları Otomatik Kaydet',
+  audioQuality: 'Ses Kalitesi',
+  low: 'Düşük',
+  medium: 'Orta',
+  high: 'Yüksek',
+  playback: 'Oynatma',
+  defaultPlaybackSpeed: 'Varsayılan Oynatma Hızı',
+  backup: 'Yedek',
+  automaticBackup: 'Otomatik Yedekleme',
+  backupRecordingsDaily: 'Kayıtları günlük yedekle',
+  about: 'Hakkında',
+  appVersion: 'Uygulama Sürümü',
+  privacyPolicy: 'Gizlilik Politikası',
+  rateVoiceVault: 'VoiceVault\'u Değerlendir',
+  privacyMessage: 'VoiceVault tüm kayıtlarınızı özel tutar ve cihazınızda yerel olarak depolar.',
+  thanks: 'Teşekkürler',
+  thankYou: 'Desteğiniz için teşekkür ederiz!',
+  premiumVoiceRecording: 'Premium Ses Kayıt Platformu',
+  yourVoiceSecured: 'Sesiniz, güvende',
+  saveRecording: 'Kayıt Kaydet',
+  recordingTitle: 'Kayıt başlığı',
+  enterRecordingTitle: 'Kayıt başlığını girin',
+  discardRecording: 'Kayıt Sil',
+  discardQuestion: 'Bu kayıt silinsin mi?',
+  keep: 'Tut',
+  paused: 'DURAKLATILDI',
+  recording: 'KAYIT YAPILIYOR',
+  action: 'İşlem',
+  choose: 'İşlem seçin',
+  renameRecording: 'Kayıt Yeniden Adlandır',
+  enterTitle: 'Başlık girin',
+  customizeExperience: 'Deneyiminizi özelleştirin',
+  manageBackups: 'Yedeklerinizi yönetin',
+  searchRecordings: 'Kayıtları ara...',
+  deleteQuestion: 'Sil',
+  deleteConfirm: 'silinsin mi?',
+  deleteBulk: 'Sil',
+  recordingsSaved: 'Kayıtlar kaydedildi!',
+  recordingSaved: 'Kayıt kaydedildi!',
+  backupCreatedSuccess: 'başarıyla oluşturuldu!',
+  backupImportedSuccess: 'içe aktarıldı.',
+  error: 'Hata',
+  microphoneError: 'Mikrofon hatası: ',
+  microphoneRequired: 'Mikrofon Gerekli',
+  allowMicrophoneAccess: 'Ses kaydetmek için mikrofon erişimine izin verin.',
+  deleteBackupQuestion: 'Yedek silinsin mi?',
+  deleteBackupConfirm: 'Sil',
+  selectAction: 'İşlem seçin:\n1. Yeniden Adlandır\n2. Paylaş\n3. Sil\n(1, 2 veya 3 girin)',
+  deleteMultiple: 'kayıt silinsin mi?',
+  deleteFolderQuestion: 'Klasör silinsin mi?',
+  noRecordingsYet: 'Henüz kayıt yok',
+  noFoldersYet: 'Henüz klasör yok',
+  noBackupsYet: 'Henüz yedek yok',
+};
+// @end:theme
+
+  // @section:navigation-setup @depends:[]
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+// @end:navigation-setup
+
+  // @section:ThemeContext @depends:[theme]
+  const ThemeContext = React.createContext({
+    theme: { colors: { primary: primaryColor, accent: accentColor, background: backgroundColor, card: cardColor, textPrimary: textPrimary, textSecondary: textSecondary, border: '#D0DCF0', success: '#10B981', error: '#EF4444', warning: '#F59E0B', overlay: 'rgba(46,80,144,0.08)' } },
+    darkMode: false,
+    toggleDarkMode: function() {},
+    designStyle: designStyle,
+  });
+  const ThemeProvider = function(props) {
+    const darkModeState = useState(false);
+    const darkMode = darkModeState[0];
+    const setDarkMode = darkModeState[1];
+    const lightTheme = useMemo(function() {
+      return { colors: { primary: '#2E5090', accent: '#5B8DEE', background: '#F0F4FF', card: '#FFFFFF', textPrimary: '#1A1A2E', textSecondary: '#5A6A8A', border: '#D0DCF0', success: '#10B981', error: '#EF4444', warning: '#F59E0B', overlay: 'rgba(46,80,144,0.08)', cardAlt: '#EEF2FF', surface: 'rgba(255,255,255,0.85)' } };
+    }, []);
+    const darkTheme = useMemo(function() {
+      return { colors: { primary: '#5B8DEE', accent: '#7BAAF7', background: '#0B1222', card: '#152039', textPrimary: '#E8F0FE', textSecondary: '#8AAAD8', border: '#1E3A6E', success: '#10B981', error: '#EF4444', warning: '#F59E0B', overlay: 'rgba(91,141,238,0.12)', cardAlt: '#1A2B4A', surface: 'rgba(21,32,57,0.92)' } };
+    }, []);
+    const theme = darkMode ? darkTheme : lightTheme;
+    const toggleDarkMode = useCallback(function() { setDarkMode(function(prev) { return !prev; }); }, []);
+    const value = useMemo(function() { return { theme: theme, darkMode: darkMode, toggleDarkMode: toggleDarkMode, designStyle: designStyle }; }, [theme, darkMode, toggleDarkMode]);
+    return React.createElement(ThemeContext.Provider, { value: value }, props.children);
+  };
+  const useTheme = function() { return useContext(ThemeContext); };
+  // @end:ThemeContext
+
+  // @section:helpers @depends:[theme]
+  var formatDuration = function(seconds) {
+    if (!seconds || isNaN(seconds)) return '0:00';
+    var s = Math.floor(seconds);
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
+    if (h > 0) return h + ':' + (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  };
+  var formatFileSize = function(bytes) {
+    if (!bytes) return '0 KB';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+  var formatDate = function(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    var now = new Date();
+    var diff = now - d;
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+    if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+  var generateId = function() { return 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); };
+  var FOLDER_COLORS = ['#2E5090', '#5B8DEE', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4'];
+  // @end:helpers
+
+  // @section:PlayerModal @depends:[ThemeContext,helpers]
+var PlayerModal = function(props) {
+    var visible = props.visible;
+    var recording = props.recording;
+    var onClose = props.onClose;
+    var insetsTop = props.insetsTop;
+    var insetsBottom = props.insetsBottom;
+    var themeCtx = useTheme();
+    var theme = themeCtx.theme;
+    const audioHook = useAudio();
+    var nativePlay = audioHook.play;
+    var nativePause = audioHook.pause;
+    var nativeResume = audioHook.resume;
+    var nativeStop = audioHook.stop;
+    var nativeIsPlaying = audioHook.isPlaying;
+    var nativeCurrentTime = audioHook.currentTime;
+    var nativeDuration = audioHook.duration;
+    var nativeSeekTo = audioHook.seekTo;
+    var webAudioRef = useRef(null);
+    var webIsPlayingState = useState(false);
+    var webIsPlaying = webIsPlayingState[0];
+    var setWebIsPlaying = webIsPlayingState[1];
+    var webCurrentTimeState = useState(0);
+    var webCurrentTime = webCurrentTimeState[0];
+    var setWebCurrentTime = webCurrentTimeState[1];
+    var webDurationState = useState(0);
+    var webDuration = webDurationState[0];
+    var setWebDuration = webDurationState[1];
+    var speedState = useState(1);
+    var speed = speedState[0];
+    var setSpeed = speedState[1];
+    var isCurrentlyPlaying = Platform.OS === 'web' ? webIsPlaying : nativeIsPlaying;
+    var displayCurrent = Platform.OS === 'web' ? webCurrentTime : nativeCurrentTime;
+    var displayDuration = Platform.OS === 'web' ? webDuration : nativeDuration;
+    useEffect(function() {
+      if (!visible) {
+        if (Platform.OS === 'web') {
+          if (webAudioRef.current) { webAudioRef.current.pause(); webAudioRef.current = null; }
+          setWebIsPlaying(false); setWebCurrentTime(0); setWebDuration(0);
+        } else { nativeStop(); }
+      }
+    }, [visible]);
+    useEffect(function() {
+      return function() {
+        if (Platform.OS === 'web' && webAudioRef.current) { webAudioRef.current.pause(); webAudioRef.current = null; }
+        else if (Platform.OS !== 'web') { nativeStop(); }
+      };
+    }, []);
+    var handlePlayPause = function() {
+      if (!recording || !recording.audio_file_path) return;
+      if (Platform.OS === 'web') {
+        if (!webAudioRef.current) {
+          webAudioRef.current = new Audio(recording.audio_file_path);
+          webAudioRef.current.onloadedmetadata = function() { setWebDuration(webAudioRef.current.duration || 0); };
+          webAudioRef.current.ontimeupdate = function() { setWebCurrentTime(webAudioRef.current.currentTime || 0); };
+          webAudioRef.current.onended = function() { setWebIsPlaying(false); setWebCurrentTime(0); };
+          webAudioRef.current.playbackRate = speed;
+        }
+        if (webIsPlaying) { webAudioRef.current.pause(); setWebIsPlaying(false); }
+        else { webAudioRef.current.play(); setWebIsPlaying(true); }
+      } else {
+        if (nativeIsPlaying) { nativePause(); } else { nativePlay(recording.audio_file_path); }
+      }
+    };
+    var handleSeek = function(ratio) {
+      var dur = displayDuration || (recording ? recording.duration_seconds : 0);
+      var newTime = Math.max(0, Math.min(1, ratio)) * dur;
+      if (Platform.OS === 'web') {
+        if (webAudioRef.current) { webAudioRef.current.currentTime = newTime; setWebCurrentTime(newTime); }
+      } else { nativeSeekTo(newTime); }
+    };
+    var handleRewind = function() {
+      var newTime = Math.max(0, displayCurrent - 10);
+      if (Platform.OS === 'web') { if (webAudioRef.current) { webAudioRef.current.currentTime = newTime; setWebCurrentTime(newTime); } }
+      else { nativeSeekTo(newTime); }
+    };
+    var handleForward = function() {
+      var dur = displayDuration || (recording ? recording.duration_seconds : 0);
+      var newTime = Math.min(dur, displayCurrent + 10);
+      if (Platform.OS === 'web') { if (webAudioRef.current) { webAudioRef.current.currentTime = newTime; setWebCurrentTime(newTime); } }
+      else { nativeSeekTo(newTime); }
+    };
+    var handleSpeedChange = function() {
+      var speeds = [0.5, 1, 1.5, 2];
+      var idx = speeds.indexOf(speed);
+      var next = speeds[(idx + 1) % speeds.length];
+      setSpeed(next);
+      if (Platform.OS === 'web' && webAudioRef.current) { webAudioRef.current.playbackRate = next; }
+    };
+    var dur = (displayDuration > 0 ? displayDuration : (recording ? recording.duration_seconds : 0)) || 1;
+    var progress = Math.min(1, displayCurrent / dur);
+    var sheetHeight = Math.round(SCREEN_HEIGHT * 0.7);
+    if (!recording) return null;
+    return React.createElement(Modal, { visible: visible, animationType: 'slide', transparent: true, onRequestClose: onClose },
+      React.createElement(View, { style: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.55)' } },
+        React.createElement(View, { style: { height: sheetHeight, backgroundColor: theme.colors.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 24, paddingTop: 16, paddingBottom: insetsBottom + 24 } },
+          React.createElement(View, { style: { width: 40, height: 4, backgroundColor: theme.colors.border, borderRadius: 2, alignSelf: 'center', marginBottom: 20 } }),
+          React.createElement(TouchableOpacity, { onPress: onClose, style: { position: 'absolute', top: 20, right: 20, padding: 8 }, componentId: 'player-close-btn' },
+            React.createElement(MaterialIcons, { name: 'close', size: 22, color: theme.colors.textSecondary })
+          ),
+          React.createElement(View, { style: { width: 64, height: 64, borderRadius: 20, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 16 } },
+            React.createElement(MaterialIcons, { name: 'mic', size: 32, color: '#FFFFFF' })
+          ),
+          React.createElement(Text, { style: { fontSize: 18, fontWeight: '700', color: theme.colors.textPrimary, textAlign: 'center', marginBottom: 4 }, numberOfLines: 1 }, recording.title || 'Kayıt'),
+          React.createElement(Text, { style: { fontSize: 13, color: theme.colors.textSecondary, textAlign: 'center', marginBottom: 24 } }, formatDate(recording.recording_date) + '  ·  ' + formatFileSize(recording.file_size_bytes)),
+          React.createElement(View, { style: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', height: 60, gap: 2, marginBottom: 12 }, componentId: 'player-waveform' },
+            Array.from({ length: 40 }).map(function(_, i) {
+              var h = 8 + Math.sin(i * 0.7) * 14;
+              var filled = (i / 40) < progress;
+              return React.createElement(View, { key: String(i), style: { width: 4, height: Math.max(4, h), borderRadius: 2, backgroundColor: filled ? theme.colors.primary : theme.colors.border } });
+            })
+          ),
+          React.createElement(View, {
+            style: { height: 6, backgroundColor: theme.colors.border, borderRadius: 3, marginBottom: 8 },
+            onStartShouldSetResponder: function() { return true; },
+            onMoveShouldSetResponder: function() { return true; },
+            onResponderGrant: function(evt) {
+              var w = evt.nativeEvent.target ? (evt.nativeEvent.target.offsetWidth || SCREEN_WIDTH - 48) : SCREEN_WIDTH - 48;
+              handleSeek((evt.nativeEvent.locationX || 0) / w);
+            },
+            onResponderMove: function(evt) {
+              var w = evt.nativeEvent.target ? (evt.nativeEvent.target.offsetWidth || SCREEN_WIDTH - 48) : SCREEN_WIDTH - 48;
+              handleSeek((evt.nativeEvent.locationX || 0) / w);
+            }
+          },
+            React.createElement(View, { style: { height: '100%', backgroundColor: theme.colors.primary, width: (progress * 100) + '%', borderRadius: 3 } })
+          ),
+          React.createElement(View, { style: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 28 } },
+            React.createElement(Text, { style: { fontSize: 12, color: theme.colors.textSecondary } }, formatDuration(displayCurrent)),
+            React.createElement(Text, { style: { fontSize: 12, color: theme.colors.textSecondary } }, formatDuration(dur))
+          ),
+          React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 24 } },
+            React.createElement(TouchableOpacity, { onPress: handleRewind, style: { padding: 10 }, componentId: 'player-rewind-btn' },
+              React.createElement(MaterialIcons, { name: 'replay-10', size: 32, color: theme.colors.textPrimary })
+            ),
+            React.createElement(TouchableOpacity, { onPress: handlePlayPause, style: { width: 64, height: 64, borderRadius: 32, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', shadowColor: theme.colors.primary, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 }, componentId: 'player-playpause-btn' },
+              React.createElement(MaterialIcons, { key: isCurrentlyPlaying ? 'pause-icon' : 'play-icon', name: isCurrentlyPlaying ? 'pause' : 'play-arrow', size: 32, color: '#FFFFFF' })
+            ),
+            React.createElement(TouchableOpacity, { onPress: handleForward, style: { padding: 10 }, componentId: 'player-forward-btn' },
+              React.createElement(MaterialIcons, { name: 'forward-10', size: 32, color: theme.colors.textPrimary })
+            )
+          ),
+          React.createElement(TouchableOpacity, { onPress: handleSpeedChange, style: { alignSelf: 'center', backgroundColor: theme.colors.overlay, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 }, componentId: 'player-speed-btn' },
+            React.createElement(Text, { style: { color: theme.colors.primary, fontWeight: '700', fontSize: 14 } }, speed + 'x')
+          )
+        )
+      )
+    );
+  };
+// @end:PlayerModal
+
+  // @section:SaveRecordingModal @depends:[ThemeContext]
+var SaveRecordingModal = function(props) {
+    var visible = props.visible;
+    var onSave = props.onSave;
+    var onDiscard = props.onDiscard;
+    var duration = props.duration;
+    var folders = props.folders;
+    var insetsBottom = props.insetsBottom;
+    var themeCtx = useTheme();
+    var theme = themeCtx.theme;
+    var titleState = useState('Kayıt ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }));
+    var title = titleState[0];
+    var setTitle = titleState[1];
+    var selectedFolderState = useState(null);
+    var selectedFolder = selectedFolderState[0];
+    var setSelectedFolder = selectedFolderState[1];
+    return React.createElement(Modal, { visible: visible, animationType: 'slide', transparent: true, onRequestClose: onDiscard },
+      React.createElement(View, { style: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' } },
+        React.createElement(View, { style: { backgroundColor: theme.colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: insetsBottom + 24 } },
+          React.createElement(Text, { style: { fontSize: 18, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 4 } }, TR.saveRecording),
+          React.createElement(Text, { style: { fontSize: 13, color: theme.colors.textSecondary, marginBottom: 20 } }, TR.duration + ': ' + formatDuration(duration)),
+          React.createElement(Text, { style: { fontSize: 13, fontWeight: '600', color: theme.colors.textSecondary, marginBottom: 8 } }, 'BAŞLIK'),
+          React.createElement(TextInput, { value: title, onChangeText: setTitle, style: { borderWidth: 1.5, borderColor: theme.colors.border, borderRadius: 12, padding: 14, fontSize: 15, color: theme.colors.textPrimary, backgroundColor: theme.colors.background, marginBottom: 16 }, placeholder: TR.enterRecordingTitle, placeholderTextColor: theme.colors.textSecondary, autoCapitalize: 'sentences', componentId: 'save-title-input' }),
+          folders && folders.length > 0 ? React.createElement(View, { style: { marginBottom: 16 } },
+            React.createElement(Text, { style: { fontSize: 13, fontWeight: '600', color: theme.colors.textSecondary, marginBottom: 8 } }, 'KLASÖR (' + TR.optional.toUpperCase() + ')'),
+            React.createElement(ScrollView, { horizontal: true, showsHorizontalScrollIndicator: false, style: { flexGrow: 'initial' } },
+              React.createElement(TouchableOpacity, { onPress: function() { setSelectedFolder(null); }, style: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: !selectedFolder ? theme.colors.primary : theme.colors.overlay, marginRight: 8 }, componentId: 'folder-none-btn' },
+                React.createElement(Text, { style: { color: !selectedFolder ? '#FFF' : theme.colors.textSecondary, fontSize: 13, fontWeight: '600' } }, TR.none)
+              ),
+              folders.map(function(f) {
+                return React.createElement(TouchableOpacity, { key: f.id, onPress: function() { setSelectedFolder(f.id); }, style: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: selectedFolder === f.id ? theme.colors.primary : theme.colors.overlay, marginRight: 8 }, componentId: 'folder-option-' + f.id },
+                  React.createElement(Text, { style: { color: selectedFolder === f.id ? '#FFF' : theme.colors.textSecondary, fontSize: 13, fontWeight: '600' } }, f.name)
+                );
+              })
+            )
+          ) : null,
+          React.createElement(View, { style: { flexDirection: 'row', gap: 12 } },
+            React.createElement(TouchableOpacity, { onPress: onDiscard, style: { flex: 1, padding: 15, borderRadius: 14, borderWidth: 1.5, borderColor: theme.colors.border, alignItems: 'center' }, componentId: 'save-discard-btn' },
+              React.createElement(Text, { style: { color: theme.colors.error, fontWeight: '600', fontSize: 15 } }, TR.discard)
+            ),
+            React.createElement(TouchableOpacity, { onPress: function() { onSave(title || 'Kayıt', selectedFolder); }, style: { flex: 2, padding: 15, borderRadius: 14, backgroundColor: theme.colors.primary, alignItems: 'center' }, componentId: 'save-confirm-btn' },
+              React.createElement(Text, { style: { color: '#FFF', fontWeight: '700', fontSize: 15 } }, TR.saveRecording)
+            )
+          )
+        )
+      )
+    );
+  };
+// @end:SaveRecordingModal
+
+  // @section:CreateFolderModal @depends:[ThemeContext]
+var CreateFolderModal = function(props) {
+    var visible = props.visible;
+    var onSave = props.onSave;
+    var onClose = props.onClose;
+    var insetsBottom = props.insetsBottom;
+    var themeCtx = useTheme();
+    var theme = themeCtx.theme;
+    var nameState = useState('');
+    var name = nameState[0];
+    var setName = nameState[1];
+    var colorState = useState('#2E5090');
+    var selectedColor = colorState[0];
+    var setSelectedColor = colorState[1];
+    return React.createElement(Modal, { visible: visible, animationType: 'fade', transparent: true, onRequestClose: onClose },
+      React.createElement(View, { style: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 24 } },
+        React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 24, padding: 24, paddingBottom: insetsBottom + 16 } },
+          React.createElement(Text, { style: { fontSize: 18, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 20 } }, TR.newFolder),
+          React.createElement(TextInput, { value: name, onChangeText: setName, style: { borderWidth: 1.5, borderColor: theme.colors.border, borderRadius: 12, padding: 14, fontSize: 15, color: theme.colors.textPrimary, backgroundColor: theme.colors.background, marginBottom: 16 }, placeholder: TR.folderName, placeholderTextColor: theme.colors.textSecondary, autoCapitalize: 'words', autoFocus: true, componentId: 'folder-name-input' }),
+          React.createElement(Text, { style: { fontSize: 13, fontWeight: '600', color: theme.colors.textSecondary, marginBottom: 10 } }, 'RENK'),
+          React.createElement(View, { style: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 24 } },
+            FOLDER_COLORS.map(function(c) {
+              return React.createElement(TouchableOpacity, { key: c, onPress: function() { setSelectedColor(c); }, style: { width: 36, height: 36, borderRadius: 18, backgroundColor: c, alignItems: 'center', justifyContent: 'center', borderWidth: selectedColor === c ? 3 : 0, borderColor: '#FFF' }, componentId: 'color-' + c },
+                selectedColor === c ? React.createElement(MaterialIcons, { name: 'check', size: 18, color: '#FFF' }) : null
+              );
+            })
+          ),
+          React.createElement(View, { style: { flexDirection: 'row', gap: 12 } },
+            React.createElement(TouchableOpacity, { onPress: onClose, style: { flex: 1, padding: 14, borderRadius: 12, borderWidth: 1.5, borderColor: theme.colors.border, alignItems: 'center' }, componentId: 'folder-cancel-btn' },
+              React.createElement(Text, { style: { color: theme.colors.textSecondary, fontWeight: '600' } }, TR.cancel)
+            ),
+            React.createElement(TouchableOpacity, { onPress: function() { if (name.trim()) { onSave(name.trim(), selectedColor); setName(''); } }, style: { flex: 1, padding: 14, borderRadius: 12, backgroundColor: theme.colors.primary, alignItems: 'center' }, componentId: 'folder-save-btn' },
+              React.createElement(Text, { style: { color: '#FFF', fontWeight: '700' } }, TR.create)
+            )
+          )
+        )
+      )
+    );
+  };
+// @end:CreateFolderModal
+
+  // @section:RenameModal @depends:[ThemeContext]
+var RenameModal = function(props) {
+    var visible = props.visible;
+    var currentTitle = props.currentTitle;
+    var onSave = props.onSave;
+    var onClose = props.onClose;
+    var insetsBottom = props.insetsBottom;
+    var themeCtx = useTheme();
+    var theme = themeCtx.theme;
+    var titleState = useState(currentTitle || '');
+    var title = titleState[0];
+    var setTitle = titleState[1];
+    useEffect(function() { if (visible) setTitle(currentTitle || ''); }, [visible, currentTitle]);
+    return React.createElement(Modal, { visible: visible, animationType: 'fade', transparent: true, onRequestClose: onClose },
+      React.createElement(View, { style: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 24 } },
+        React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 24, padding: 24 } },
+          React.createElement(Text, { style: { fontSize: 18, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 16 } }, TR.renameRecording),
+          React.createElement(TextInput, { value: title, onChangeText: setTitle, style: { borderWidth: 1.5, borderColor: theme.colors.border, borderRadius: 12, padding: 14, fontSize: 15, color: theme.colors.textPrimary, backgroundColor: theme.colors.background, marginBottom: 20 }, placeholder: TR.recordingTitle, placeholderTextColor: theme.colors.textSecondary, autoCapitalize: 'sentences', autoFocus: true, componentId: 'rename-input' }),
+          React.createElement(View, { style: { flexDirection: 'row', gap: 12 } },
+            React.createElement(TouchableOpacity, { onPress: onClose, style: { flex: 1, padding: 14, borderRadius: 12, borderWidth: 1.5, borderColor: theme.colors.border, alignItems: 'center' }, componentId: 'rename-cancel' },
+              React.createElement(Text, { style: { color: theme.colors.textSecondary, fontWeight: '600' } }, TR.cancel)
+            ),
+            React.createElement(TouchableOpacity, { onPress: function() { if (title.trim()) onSave(title.trim()); }, style: { flex: 1, padding: 14, borderRadius: 12, backgroundColor: theme.colors.primary, alignItems: 'center' }, componentId: 'rename-save' },
+              React.createElement(Text, { style: { color: '#FFF', fontWeight: '700' } }, TR.save)
+            )
+          )
+        )
+      )
+    );
+  };
+// @end:RenameModal
+
+  // @section:RecordingCard @depends:[ThemeContext,helpers]
+var RecordingCard = function(props) {
+    var rec = props.recording;
+    var onPress = props.onPress;
+    var onLongPress = props.onLongPress;
+    var onFavorite = props.onFavorite;
+    var onDelete = props.onDelete;
+    var onRename = props.onRename;
+    var onShare = props.onShare;
+    var isSelected = props.isSelected;
+    var selectMode = props.selectMode;
+    var theme = props.theme;
+    return React.createElement(TouchableOpacity, { onPress: onPress, onLongPress: onLongPress, style: { backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: isSelected ? 2 : 0, borderColor: isSelected ? theme.colors.primary : 'transparent', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 3 }, activeOpacity: 0.8, componentId: 'recording-card-' + rec.id },
+      React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center' } },
+        selectMode ? React.createElement(View, { style: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: isSelected ? theme.colors.primary : theme.colors.border, backgroundColor: isSelected ? theme.colors.primary : 'transparent', alignItems: 'center', justifyContent: 'center', marginRight: 12 } },
+          isSelected ? React.createElement(MaterialIcons, { name: 'check', size: 14, color: '#FFF' }) : null
+        ) : React.createElement(View, { style: { width: 44, height: 44, borderRadius: 14, backgroundColor: theme.colors.overlay, alignItems: 'center', justifyContent: 'center', marginRight: 12 } },
+          React.createElement(MaterialIcons, { name: 'mic', size: 22, color: theme.colors.primary })
+        ),
+        React.createElement(View, { style: { flex: 1 } },
+          React.createElement(Text, { style: { fontSize: 15, fontWeight: '600', color: theme.colors.textPrimary, marginBottom: 3 }, numberOfLines: 1 }, rec.title),
+          React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', gap: 8 } },
+            React.createElement(Text, { style: { fontSize: 12, color: theme.colors.textSecondary } }, formatDate(rec.recording_date)),
+            React.createElement(View, { style: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: theme.colors.border } }),
+            React.createElement(Text, { style: { fontSize: 12, color: theme.colors.textSecondary } }, formatDuration(rec.duration_seconds)),
+            React.createElement(View, { style: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: theme.colors.border } }),
+            React.createElement(Text, { style: { fontSize: 12, color: theme.colors.textSecondary } }, formatFileSize(rec.file_size_bytes))
+          )
+        ),
+        React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', gap: 4 } },
+          React.createElement(TouchableOpacity, { onPress: onFavorite, style: { padding: 6 }, componentId: 'fav-btn-' + rec.id },
+            React.createElement(MaterialIcons, { name: rec.is_favorite ? 'star' : 'star-border', size: 20, color: rec.is_favorite ? '#F59E0B' : theme.colors.textSecondary })
+          ),
+          !selectMode ? React.createElement(TouchableOpacity, { onPress: function() {
+            var actions = [
+              { text: TR.rename, onPress: onRename },
+              { text: TR.share, onPress: onShare },
+              { text: TR.delete, onPress: onDelete, style: 'destructive' },
+              { text: TR.cancel, style: 'cancel' }
+            ];
+            if (Platform.OS === 'web') {
+              var choice = window.prompt(TR.selectAction);
+              if (choice === '1') onRename();
+              else if (choice === '2') onShare();
+              else if (choice === '3') onDelete();
+            } else {
+              Alert.alert(rec.title, TR.choose, actions);
+            }
+          }, style: { padding: 6 }, componentId: 'more-btn-' + rec.id },
+            React.createElement(MaterialIcons, { name: 'more-vert', size: 20, color: theme.colors.textSecondary })
+          ) : null
+        )
+      )
+    );
+  };
+// @end:RecordingCard
+
+  // @section:HomeScreen @depends:[ThemeContext,helpers,RecordingCard,PlayerModal,RecordingOverlay]
+var HomeScreen = function(props) {
+  var navigation = props.navigation;
+  var themeCtx = useTheme();
+  var theme = themeCtx.theme;
+  var insets = useSafeAreaInsets();
+  var scrollBottomPadding = Platform.OS === 'web' ? WEB_TAB_MENU_PADDING : (TAB_MENU_HEIGHT + insets.bottom + SCROLL_EXTRA_PADDING);
+  
+  var recordingsQuery = useQuery('recordings', {}, { column: 'recording_date', ascending: false });
+  var recordings = recordingsQuery.data || [];
+  var backupsQuery = useQuery('backups', {}, { column: 'backup_timestamp', ascending: false });
+  var backups = backupsQuery.data || [];
+  var updateRecMutation = useMutation('recordings', 'update');
+  var updateRec = updateRecMutation.mutate;
+  
+  var recordingOverlayVisibleState = useState(false);
+  var recordingOverlayVisible = recordingOverlayVisibleState[0];
+  var setRecordingOverlayVisible = recordingOverlayVisibleState[1];
+  
+  var playerVisibleState = useState(false);
+  var playerVisible = playerVisibleState[0];
+  var setPlayerVisible = playerVisibleState[1];
+  var selectedRecState = useState(null);
+  var selectedRec = selectedRecState[0];
+  var setSelectedRec = selectedRecState[1];
+  
+  var recentRecs = useMemo(function() { return recordings.slice(0, 5); }, [recordings]);
+  var favoriteRecs = useMemo(function() { return recordings.filter(function(r) { return r.is_favorite; }); }, [recordings]);
+  var totalDuration = useMemo(function() { return recordings.reduce(function(acc, r) { return acc + (r.duration_seconds || 0); }, 0); }, [recordings]);
+  var totalSize = useMemo(function() { return recordings.reduce(function(acc, r) { return acc + (r.file_size_bytes || 0); }, 0); }, [recordings]);
+  
+  var lastBackup = backups.length > 0 ? backups[0] : null;
+  
+  var handlePlayRec = function(rec) { setSelectedRec(rec); setPlayerVisible(true); };
+  var handleFavorite = function(rec) {
+    updateRec({ id: rec.id, data: { is_favorite: !rec.is_favorite } }).then(function() { recordingsQuery.refetch(); });
+  };
+  
+  var statsData = [
+    { label: TR.recordings, value: String(recordings.length), icon: 'mic', color: theme.colors.primary },
+    { label: TR.totalTime, value: formatDuration(totalDuration), icon: 'access-time', color: '#10B981' },
+    { label: TR.storage, value: formatFileSize(totalSize), icon: 'storage', color: '#F59E0B' }
+  ];
+  
+  return React.createElement(View, { style: { flex: 1, backgroundColor: theme.colors.background } },
+    React.createElement(View, { style: { backgroundColor: theme.colors.primary, paddingTop: insets.top + 12, paddingBottom: 24, paddingHorizontal: 20 } },
+      React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' } },
+        React.createElement(View, null,
+          React.createElement(Text, { style: { fontSize: 22, fontWeight: '800', color: '#FFFFFF' }, componentId: 'home-title' }, 'VoiceVault'),
+          React.createElement(Text, { style: { fontSize: 13, color: 'rgba(255,255,255,0.75)' } }, TR.yourVoiceSecured)
+        ),
+        React.createElement(View, { style: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' } },
+          React.createElement(MaterialIcons, { name: 'mic', size: 22, color: '#FFFFFF' })
+        )
+      )
+    ),
+    
+    React.createElement(ScrollView, { style: { flex: 1 }, contentContainerStyle: { paddingTop: 20, paddingBottom: scrollBottomPadding, paddingHorizontal: 16 }, showsVerticalScrollIndicator: false },
+      React.createElement(View, { style: { flexDirection: 'row', gap: 10, marginBottom: 24 } },
+        statsData.map(function(s) {
+          return React.createElement(View, { key: s.label, style: { flex: 1, backgroundColor: theme.colors.card, borderRadius: 16, padding: 14, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 }, componentId: 'stat-' + s.label },
+            React.createElement(View, { style: { width: 36, height: 36, borderRadius: 12, backgroundColor: s.color + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 8 } },
+              React.createElement(MaterialIcons, { name: s.icon, size: 18, color: s.color })
+            ),
+            React.createElement(Text, { style: { fontSize: 16, fontWeight: '800', color: theme.colors.textPrimary, marginBottom: 2 } }, s.value),
+            React.createElement(Text, { style: { fontSize: 11, color: theme.colors.textSecondary, textAlign: 'center' } }, s.label)
+          );
+        })
+      ),
+      
+      lastBackup ? React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 12, borderLeftWidth: 4, borderLeftColor: '#10B981' }, componentId: 'backup-status-widget' },
+        React.createElement(View, { style: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#10B98120', alignItems: 'center', justifyContent: 'center' } },
+          React.createElement(MaterialIcons, { name: 'backup', size: 20, color: '#10B981' })
+        ),
+        React.createElement(View, { style: { flex: 1 } },
+          React.createElement(Text, { style: { fontSize: 14, fontWeight: '600', color: theme.colors.textPrimary } }, TR.lastBackup),
+          React.createElement(Text, { style: { fontSize: 12, color: theme.colors.textSecondary } }, lastBackup.backup_name + ' · ' + formatDate(lastBackup.backup_timestamp))
+        ),
+        React.createElement(View, { style: { backgroundColor: '#10B981', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 } },
+          React.createElement(Text, { style: { fontSize: 11, color: '#FFF', fontWeight: '700' } }, TR.ok)
+        )
+      ) : null,
+      
+      favoriteRecs.length > 0 ? React.createElement(View, { style: { marginBottom: 24 } },
+        React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } },
+          React.createElement(Text, { style: { fontSize: 16, fontWeight: '700', color: theme.colors.textPrimary } }, '⭐ ' + TR.favorites),
+          React.createElement(TouchableOpacity, { onPress: function() { navigation.navigate('Kayıtlar'); }, componentId: 'see-all-favorites' },
+            React.createElement(Text, { style: { fontSize: 13, color: theme.colors.primary, fontWeight: '600' } }, TR.seeAll)
+          )
+        ),
+        favoriteRecs.slice(0, 3).map(function(rec) {
+          return React.createElement(RecordingCard, { key: rec.id, recording: rec, theme: theme, onPress: function() { handlePlayRec(rec); }, onLongPress: function() {}, onFavorite: function() { handleFavorite(rec); }, onDelete: function() {}, onRename: function() {}, onShare: function() {}, isSelected: false, selectMode: false });
+        })
+      ) : null,
+      
+      React.createElement(View, { style: { marginBottom: 8 } },
+        React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } },
+          React.createElement(Text, { style: { fontSize: 16, fontWeight: '700', color: theme.colors.textPrimary } }, TR.recentRecordings),
+          React.createElement(TouchableOpacity, { onPress: function() { navigation.navigate('Kayıtlar'); }, componentId: 'see-all-recent' },
+            React.createElement(Text, { style: { fontSize: 13, color: theme.colors.primary, fontWeight: '600' } }, TR.seeAll)
+          )
+        ),
+        recentRecs.length > 0 ? recentRecs.map(function(rec) {
+          return React.createElement(RecordingCard, { key: rec.id, recording: rec, theme: theme, onPress: function() { handlePlayRec(rec); }, onLongPress: function() {}, onFavorite: function() { handleFavorite(rec); }, onDelete: function() {}, onRename: function() {}, onShare: function() {}, isSelected: false, selectMode: false });
+        }) : React.createElement(View, { style: { alignItems: 'center', paddingVertical: 40 } },
+          React.createElement(MaterialIcons, { name: 'mic-none', size: 48, color: theme.colors.border }),
+          React.createElement(Text, { style: { fontSize: 15, color: theme.colors.textSecondary, marginTop: 12, fontWeight: '500' } }, TR.noRecordings),
+          React.createElement(Text, { style: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 4 } }, TR.tapMicToStart)
+        )
+      )
+    ),
+    
+    React.createElement(PlayerModal, { visible: playerVisible, recording: selectedRec, onClose: function() { setPlayerVisible(false); }, insetsTop: insets.top, insetsBottom: insets.bottom }),
+    React.createElement(RecordingOverlay, { visible: recordingOverlayVisible, onClose: function() { setRecordingOverlayVisible(false); recordingsQuery.refetch(); } }),
+    React.createElement(FloatingMicButton, { onPress: function() { setRecordingOverlayVisible(true); }, isRecording: false })
+  );
+};
+// @end:HomeScreen
+
+  // @section:LibraryScreen @depends:[ThemeContext,helpers,RecordingCard,PlayerModal,RenameModal,CreateFolderModal]
+var LibraryScreen = function(props) {
+    var themeCtx = useTheme();
+    var theme = themeCtx.theme;
+    var insets = useSafeAreaInsets();
+    var scrollBottomPadding = Platform.OS === 'web' ? WEB_TAB_MENU_PADDING : (TAB_MENU_HEIGHT + insets.bottom + SCROLL_EXTRA_PADDING);
+    var recordingsQuery = useQuery('recordings', {}, { column: 'recording_date', ascending: false });
+    var recordings = recordingsQuery.data || [];
+    var foldersQuery = useQuery('folders', {}, { column: 'name', ascending: true });
+    var folders = foldersQuery.data || [];
+    var deleteRecMut = useMutation('recordings', 'delete');
+    var updateRecMut = useMutation('recordings', 'update');
+    var insertFolderMut = useMutation('folders', 'insert');
+    var deleteFolderMut = useMutation('folders', 'delete');
+    var shareHook = useShare();
+    var shareFile = shareHook.shareFile;
+    var searchState = useState('');
+    var search = searchState[0];
+    var setSearch = searchState[1];
+    var sortState = useState('newest');
+    var sort = sortState[0];
+    var setSort = sortState[1];
+    var selectedFolderState = useState(null);
+    var selectedFolder = selectedFolderState[0];
+    var setSelectedFolder = selectedFolderState[1];
+    var tabState = useState('recordings');
+    var tab = tabState[0];
+    var setTab = tabState[1];
+    var selectModeState = useState(false);
+    var selectMode = selectModeState[0];
+    var setSelectMode = selectModeState[1];
+    var selectedIdsState = useState([]);
+    var selectedIds = selectedIdsState[0];
+    var setSelectedIds = selectedIdsState[1];
+    var playerVisibleState = useState(false);
+    var playerVisible = playerVisibleState[0];
+    var setPlayerVisible = playerVisibleState[1];
+    var selectedRecState = useState(null);
+    var selectedRec = selectedRecState[0];
+    var setSelectedRec = selectedRecState[1];
+    var renameVisibleState = useState(false);
+    var renameVisible = renameVisibleState[0];
+    var setRenameVisible = renameVisibleState[1];
+    var renameTargetState = useState(null);
+    var renameTarget = renameTargetState[0];
+    var setRenameTarget = renameTargetState[1];
+    var showFolderModalState = useState(false);
+    var showFolderModal = showFolderModalState[0];
+    var setShowFolderModal = showFolderModalState[1];
+    var showSortState = useState(false);
+    var showSort = showSortState[0];
+    var setShowSort = showSortState[1];
+    var filteredRecs = useMemo(function() {
+      var r = recordings.slice();
+      if (selectedFolder) r = r.filter(function(x) { return x.folder_id === selectedFolder; });
+      if (search.trim()) r = r.filter(function(x) { return x.title && x.title.toLowerCase().indexOf(search.toLowerCase()) >= 0; });
+      if (sort === 'newest') r.sort(function(a, b) { return new Date(b.recording_date) - new Date(a.recording_date); });
+      else if (sort === 'oldest') r.sort(function(a, b) { return new Date(a.recording_date) - new Date(b.recording_date); });
+      else if (sort === 'longest') r.sort(function(a, b) { return b.duration_seconds - a.duration_seconds; });
+      else if (sort === 'shortest') r.sort(function(a, b) { return a.duration_seconds - b.duration_seconds; });
+      else if (sort === 'alpha') r.sort(function(a, b) { return (a.title || '').localeCompare(b.title || ''); });
+      return r;
+    }, [recordings, selectedFolder, search, sort]);
+    var handleDelete = function(rec) {
+      var doDelete = function() { deleteRecMut.mutate({ id: rec.id }).then(function() { recordingsQuery.refetch(); }); };
+      if (Platform.OS === 'web') { if (window.confirm('"' + rec.title + '" ' + TR.deleteQuestion + '?')) doDelete(); }
+      else Alert.alert(TR.delete, '"' + rec.title + '" ' + TR.deleteQuestion + '?', [{ text: TR.cancel, style: 'cancel' }, { text: TR.delete, style: 'destructive', onPress: doDelete }]);
+    };
+    var handleFavorite = function(rec) { updateRecMut.mutate({ id: rec.id, data: { is_favorite: !rec.is_favorite } }).then(function() { recordingsQuery.refetch(); }); };
+    var handleRename = function(rec) { setRenameTarget(rec); setRenameVisible(true); };
+    var handleRenameConfirm = function(newTitle) { updateRecMut.mutate({ id: renameTarget.id, data: { title: newTitle } }).then(function() { recordingsQuery.refetch(); setRenameVisible(false); setRenameTarget(null); }); };
+    var handleShare = function(rec) { shareFile(rec.audio_file_path, { mimeType: 'audio/m4a', title: rec.title, filename: rec.title + '.m4a' }).then(function(r) { if (r.error && Platform.OS !== 'web') Alert.alert(TR.error, r.error); }); };
+    var handleBulkDelete = function() {
+      var doDelete = function() { selectedIds.forEach(function(id) { deleteRecMut.mutate({ id: id }); }); setTimeout(function() { recordingsQuery.refetch(); setSelectedIds([]); setSelectMode(false); }, 300); };
+      if (Platform.OS === 'web') { if (window.confirm(selectedIds.length + ' ' + TR.deleteBulk + '?')) doDelete(); }
+      else Alert.alert(TR.delete, selectedIds.length + ' ' + TR.deleteBulk + '?', [{ text: TR.cancel, style: 'cancel' }, { text: TR.delete, style: 'destructive', onPress: doDelete }]);
+    };
+    var handleCreateFolder = function(name, color) { insertFolderMut.mutate({ name: name, folder_color: color, description: null }).then(function() { foldersQuery.refetch(); setShowFolderModal(false); }); };
+    var handleDeleteFolder = function(folder) {
+      var doDelete = function() { deleteFolderMut.mutate({ id: folder.id }).then(function() { foldersQuery.refetch(); if (selectedFolder === folder.id) setSelectedFolder(null); }); };
+      if (Platform.OS === 'web') { if (window.confirm('"' + folder.name + '" ' + TR.deleteQuestion + '?')) doDelete(); }
+      else Alert.alert(TR.deleteFolder, '"' + folder.name + '" ' + TR.deleteQuestion + '?', [{ text: TR.cancel, style: 'cancel' }, { text: TR.delete, style: 'destructive', onPress: doDelete }]);
+    };
+    var sortOptions = [{ key: 'newest', label: TR.newestFirst }, { key: 'oldest', label: TR.oldestFirst }, { key: 'longest', label: TR.longestFirst }, { key: 'shortest', label: TR.shortestFirst }, { key: 'alpha', label: TR.alphabetical }];
+    return React.createElement(View, { style: { flex: 1, backgroundColor: theme.colors.background } },
+      React.createElement(View, { style: { backgroundColor: theme.colors.primary, paddingTop: insets.top + 12, paddingBottom: 16, paddingHorizontal: 16 } },
+        React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 } },
+          React.createElement(Text, { style: { fontSize: 20, fontWeight: '800', color: '#FFFFFF' }, componentId: 'library-title' }, TR.library),
+          React.createElement(View, { style: { flexDirection: 'row', gap: 8 } },
+            selectMode ? React.createElement(TouchableOpacity, { onPress: function() { setSelectMode(false); setSelectedIds([]); }, style: { paddingHorizontal: 12, paddingVertical: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 10 }, componentId: 'cancel-select-btn' },
+              React.createElement(Text, { style: { color: '#FFF', fontSize: 13, fontWeight: '600' } }, TR.cancel)
+            ) : null,
+            React.createElement(TouchableOpacity, { onPress: function() { setShowFolderModal(true); }, style: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' }, componentId: 'add-folder-btn' },
+              React.createElement(MaterialIcons, { name: 'create-new-folder', size: 20, color: '#FFF' })
+            )
+          )
+        ),
+        React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 12 } },
+          React.createElement(MaterialIcons, { name: 'search', size: 18, color: 'rgba(255,255,255,0.8)', marginRight: 8 }),
+          React.createElement(TextInput, { value: search, onChangeText: setSearch, placeholder: TR.search + ' ' + TR.recordings.toLowerCase() + '...', placeholderTextColor: 'rgba(255,255,255,0.55)', style: { flex: 1, fontSize: 14, color: '#FFFFFF', padding: 0 }, autoCapitalize: 'none', componentId: 'library-search' })
+        ),
+        React.createElement(View, { style: { flexDirection: 'row', gap: 8 } },
+          React.createElement(TouchableOpacity, { onPress: function() { setTab('recordings'); setSelectedFolder(null); }, style: { flex: 1, paddingVertical: 8, borderRadius: 10, backgroundColor: tab === 'recordings' ? 'rgba(255,255,255,0.25)' : 'transparent', alignItems: 'center' }, componentId: 'tab-recordings' },
+            React.createElement(Text, { style: { color: '#FFF', fontSize: 13, fontWeight: tab === 'recordings' ? '700' : '400' } }, TR.allRecordings)
+          ),
+          React.createElement(TouchableOpacity, { onPress: function() { setTab('folders'); }, style: { flex: 1, paddingVertical: 8, borderRadius: 10, backgroundColor: tab === 'folders' ? 'rgba(255,255,255,0.25)' : 'transparent', alignItems: 'center' }, componentId: 'tab-folders' },
+            React.createElement(Text, { style: { color: '#FFF', fontSize: 13, fontWeight: tab === 'folders' ? '700' : '400' } }, TR.folders)
+          )
+        )
+      ),
+      tab === 'recordings' ? React.createElement(View, { style: { flex: 1 } },
+        React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10 } },
+          React.createElement(Text, { style: { fontSize: 13, color: theme.colors.textSecondary } }, filteredRecs.length + ' ' + (filteredRecs.length !== 1 ? TR.recordings : TR.recordings)),
+          React.createElement(View, { style: { flexDirection: 'row', gap: 8 } },
+            selectMode && selectedIds.length > 0 ? React.createElement(TouchableOpacity, { onPress: handleBulkDelete, style: { backgroundColor: theme.colors.error, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 }, componentId: 'bulk-delete-btn' },
+              React.createElement(Text, { style: { color: '#FFF', fontSize: 12, fontWeight: '600' } }, TR.delete + ' ' + selectedIds.length)
+            ) : null,
+            React.createElement(TouchableOpacity, { onPress: function() { setShowSort(true); }, style: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: theme.colors.overlay, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 }, componentId: 'sort-btn' },
+              React.createElement(MaterialIcons, { name: 'sort', size: 16, color: theme.colors.primary }),
+              React.createElement(Text, { style: { fontSize: 12, color: theme.colors.primary, fontWeight: '600' } }, TR.sortBy)
+            )
+          )
+        ),
+        React.createElement(FlatList, { data: filteredRecs, keyExtractor: function(item) { return item.id; }, renderItem: function(info) {
+          var rec = info.item;
+          var isSelected = selectedIds.indexOf(rec.id) >= 0;
+          return React.createElement(View, { style: { paddingHorizontal: 16 } },
+            React.createElement(RecordingCard, { recording: rec, theme: theme, onPress: function() { if (selectMode) { setSelectedIds(function(prev) { return isSelected ? prev.filter(function(x) { return x !== rec.id; }) : prev.concat([rec.id]); }); } else { setSelectedRec(rec); setPlayerVisible(true); } }, onLongPress: function() { setSelectMode(true); setSelectedIds([rec.id]); }, onFavorite: function() { handleFavorite(rec); }, onDelete: function() { handleDelete(rec); }, onRename: function() { handleRename(rec); }, onShare: function() { handleShare(rec); }, isSelected: isSelected, selectMode: selectMode })
+          );
+        }, contentContainerStyle: { paddingTop: 4, paddingBottom: scrollBottomPadding }, showsVerticalScrollIndicator: false, ListEmptyComponent: React.createElement(View, { style: { alignItems: 'center', paddingVertical: 60 } },
+          React.createElement(MaterialIcons, { name: 'mic-off', size: 48, color: theme.colors.border }),
+          React.createElement(Text, { style: { color: theme.colors.textSecondary, marginTop: 12, fontSize: 15, fontWeight: '500' } }, search ? TR.noResults : TR.noRecordingsYet)
+        ) })
+      ) : React.createElement(ScrollView, { style: { flex: 1 }, contentContainerStyle: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: scrollBottomPadding } },
+        folders.length === 0 ? React.createElement(View, { style: { alignItems: 'center', paddingVertical: 60 } },
+          React.createElement(MaterialIcons, { name: 'folder-open', size: 48, color: theme.colors.border }),
+          React.createElement(Text, { style: { color: theme.colors.textSecondary, marginTop: 12, fontSize: 15, fontWeight: '500' } }, TR.noFoldersYet),
+          React.createElement(TouchableOpacity, { onPress: function() { setShowFolderModal(true); }, style: { marginTop: 16, backgroundColor: theme.colors.primary, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10 }, componentId: 'create-first-folder' },
+            React.createElement(Text, { style: { color: '#FFF', fontWeight: '600' } }, TR.createFolder)
+          )
+        ) : folders.map(function(folder) {
+          var folderRecs = recordings.filter(function(r) { return r.folder_id === folder.id; });
+          return React.createElement(TouchableOpacity, { key: folder.id, onPress: function() { setSelectedFolder(folder.id); setTab('recordings'); }, style: { backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 }, componentId: 'folder-card-' + folder.id },
+            React.createElement(View, { style: { width: 48, height: 48, borderRadius: 14, backgroundColor: (folder.folder_color || '#2E5090') + '20', alignItems: 'center', justifyContent: 'center', marginRight: 14 } },
+              React.createElement(MaterialIcons, { name: 'folder', size: 26, color: folder.folder_color || '#2E5090' })
+            ),
+            React.createElement(View, { style: { flex: 1 } },
+              React.createElement(Text, { style: { fontSize: 15, fontWeight: '600', color: theme.colors.textPrimary, marginBottom: 3 } }, folder.name),
+              React.createElement(Text, { style: { fontSize: 12, color: theme.colors.textSecondary } }, folderRecs.length + ' ' + (folderRecs.length !== 1 ? TR.recordings : TR.recordings))
+            ),
+            React.createElement(TouchableOpacity, { onPress: function() { handleDeleteFolder(folder); }, style: { padding: 8 }, componentId: 'delete-folder-' + folder.id },
+              React.createElement(MaterialIcons, { name: 'delete-outline', size: 20, color: theme.colors.textSecondary })
+            )
+          );
+        })
+      ),
+      React.createElement(Modal, { visible: showSort, transparent: true, animationType: 'fade', onRequestClose: function() { setShowSort(false); } },
+        React.createElement(TouchableOpacity, { style: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', paddingHorizontal: 40 }, onPress: function() { setShowSort(false); }, activeOpacity: 1 },
+          React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 20, overflow: 'hidden' } },
+            React.createElement(Text, { style: { fontSize: 14, fontWeight: '700', color: theme.colors.textSecondary, padding: 16, paddingBottom: 8 } }, TR.sortBy.toUpperCase()),
+            sortOptions.map(function(opt) {
+              return React.createElement(TouchableOpacity, { key: opt.key, onPress: function() { setSort(opt.key); setShowSort(false); }, style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, borderTopWidth: 0.5, borderTopColor: theme.colors.border }, componentId: 'sort-option-' + opt.key },
+                React.createElement(Text, { style: { fontSize: 15, color: sort === opt.key ? theme.colors.primary : theme.colors.textPrimary, fontWeight: sort === opt.key ? '700' : '400' } }, opt.label),
+                sort === opt.key ? React.createElement(MaterialIcons, { name: 'check', size: 20, color: theme.colors.primary }) : null
+              );
+            })
+          )
+        )
+      ),
+      React.createElement(PlayerModal, { visible: playerVisible, recording: selectedRec, onClose: function() { setPlayerVisible(false); }, insetsTop: insets.top, insetsBottom: insets.bottom }),
+      React.createElement(RenameModal, { visible: renameVisible, currentTitle: renameTarget ? renameTarget.title : '', onSave: handleRenameConfirm, onClose: function() { setRenameVisible(false); setRenameTarget(null); }, insetsBottom: insets.bottom }),
+      React.createElement(CreateFolderModal, { visible: showFolderModal, onSave: handleCreateFolder, onClose: function() { setShowFolderModal(false); }, insetsBottom: insets.bottom })
+    );
+  };
+// @end:LibraryScreen
+
+  // @section:BackupsScreen @depends:[ThemeContext,helpers]
+var BackupsScreen = function(props) {
+    var themeCtx = useTheme();
+    var theme = themeCtx.theme;
+    var insets = useSafeAreaInsets();
+    var scrollBottomPadding = Platform.OS === 'web' ? WEB_TAB_MENU_PADDING : (TAB_MENU_HEIGHT + insets.bottom + SCROLL_EXTRA_PADDING);
+    var backupsQuery = useQuery('backups', {}, { column: 'backup_timestamp', ascending: false });
+    var backups = backupsQuery.data || [];
+    var recordingsQuery = useQuery('recordings', {}, { column: 'recording_date', ascending: false });
+    var recordings = recordingsQuery.data || [];
+    var insertBackupMut = useMutation('backups', 'insert');
+    var deleteBackupMut = useMutation('backups', 'delete');
+    var filePickerHook = useFilePicker();
+    var pickDocument = filePickerHook.pickDocument;
+    var lastFile = filePickerHook.lastFile;
+    var isPickerLoading = filePickerHook.isLoading;
+    var filePickerError = filePickerHook.error;
+    var shareHook = useShare();
+    var share = shareHook.share;
+    var creatingState = useState(false);
+    var creating = creatingState[0];
+    var setCreating = creatingState[1];
+    var totalSize = useMemo(function() { return recordings.reduce(function(acc, r) { return acc + (r.file_size_bytes || 0); }, 0); }, [recordings]);
+    var totalDuration = useMemo(function() { return recordings.reduce(function(acc, r) { return acc + (r.duration_seconds || 0); }, 0); }, [recordings]);
+    var handleCreateBackup = function() {
+      setCreating(true);
+      var ts = new Date();
+      var name = 'VoiceVault_Yedek_' + ts.toISOString().split('T')[0];
+      insertBackupMut.mutate({ backup_name: name, recording_count: recordings.length, total_size_bytes: totalSize, backup_file_path: null, backup_timestamp: ts.toISOString(), backup_type: 'manual' }).then(function() {
+        setCreating(false);
+        backupsQuery.refetch();
+        if (Platform.OS === 'web') window.alert(TR.backupCreatedSuccess + ' ' + name);
+        else Alert.alert(TR.backupCreated, name + ' ' + TR.backupCreatedSuccess);
+      }).catch(function(err) {
+        setCreating(false);
+        if (Platform.OS === 'web') window.alert(err.message); else Alert.alert(TR.error, err.message);
+      });
+    };
+    var handleImportBackup = function() {
+      pickDocument({ type: ['application/json', 'application/zip', '*/*'] }).then(function(result) {
+        if (!result.cancelled && result.file) {
+          insertBackupMut.mutate({ backup_name: result.file.name, recording_count: 0, total_size_bytes: result.file.size || 0, backup_file_path: result.file.uri, backup_timestamp: new Date().toISOString(), backup_type: 'imported' }).then(function() {
+            backupsQuery.refetch();
+            if (Platform.OS === 'web') window.alert(TR.backupImportedSuccess + ' ' + result.file.name);
+            else Alert.alert(TR.backupImported, result.file.name + ' ' + TR.backupImportedSuccess);
+          });
+        }
+      });
+    };
+    var handleDeleteBackup = function(backup) {
+      var doDelete = function() { deleteBackupMut.mutate({ id: backup.id }).then(function() { backupsQuery.refetch(); }); };
+      if (Platform.OS === 'web') { if (window.confirm('"' + backup.backup_name + '" ' + TR.deleteQuestion + '?')) doDelete(); }
+      else Alert.alert(TR.deleteBackupQuestion, '"' + backup.backup_name + '" ' + TR.deleteQuestion + '?', [{ text: TR.cancel, style: 'cancel' }, { text: TR.delete, style: 'destructive', onPress: doDelete }]);
+    };
+    var handleShareBackup = function(backup) {
+      share({ message: 'VoiceVault ' + TR.backup + ': ' + backup.backup_name + '\n' + TR.recordings + ': ' + backup.recording_count + '\nTarih: ' + formatDate(backup.backup_timestamp) }).then(function(r) { if (r.error) { if (Platform.OS !== 'web') Alert.alert(TR.error, r.error); } });
+    };
+    var usedPercent = Math.min(100, Math.round((totalSize / (500 * 1024 * 1024)) * 100));
+    return React.createElement(View, { style: { flex: 1, backgroundColor: theme.colors.background } },
+      React.createElement(View, { style: { backgroundColor: theme.colors.primary, paddingTop: insets.top + 12, paddingBottom: 20, paddingHorizontal: 20 } },
+        React.createElement(Text, { style: { fontSize: 20, fontWeight: '800', color: '#FFFFFF' }, componentId: 'backups-title' }, TR.backups),
+        React.createElement(Text, { style: { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 } }, 'Yedeklerinizi yönetin')
+      ),
+      React.createElement(ScrollView, { style: { flex: 1 }, contentContainerStyle: { paddingTop: 20, paddingBottom: scrollBottomPadding, paddingHorizontal: 16 }, showsVerticalScrollIndicator: false },
+        React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 20, padding: 20, marginBottom: 20, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }, componentId: 'storage-overview' },
+          React.createElement(Text, { style: { fontSize: 15, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 16 } }, TR.storageOverview),
+          React.createElement(View, { style: { flexDirection: 'row', gap: 12, marginBottom: 20 } },
+            React.createElement(View, { style: { flex: 1, backgroundColor: theme.colors.overlay, borderRadius: 14, padding: 14, alignItems: 'center' } },
+              React.createElement(Text, { style: { fontSize: 22, fontWeight: '800', color: theme.colors.primary } }, String(recordings.length)),
+              React.createElement(Text, { style: { fontSize: 11, color: theme.colors.textSecondary, marginTop: 2 } }, TR.recordings)
+            ),
+            React.createElement(View, { style: { flex: 1, backgroundColor: theme.colors.overlay, borderRadius: 14, padding: 14, alignItems: 'center' } },
+              React.createElement(Text, { style: { fontSize: 22, fontWeight: '800', color: theme.colors.primary } }, formatFileSize(totalSize)),
+              React.createElement(Text, { style: { fontSize: 11, color: theme.colors.textSecondary, marginTop: 2 } }, TR.totalSize)
+            ),
+            React.createElement(View, { style: { flex: 1, backgroundColor: theme.colors.overlay, borderRadius: 14, padding: 14, alignItems: 'center' } },
+              React.createElement(Text, { style: { fontSize: 22, fontWeight: '800', color: theme.colors.primary } }, formatDuration(totalDuration)),
+              React.createElement(Text, { style: { fontSize: 11, color: theme.colors.textSecondary, marginTop: 2 } }, TR.totalTime)
+            )
+          ),
+          React.createElement(Text, { style: { fontSize: 12, fontWeight: '600', color: theme.colors.textSecondary, marginBottom: 8 } }, TR.storageUsed + ': ' + usedPercent + '% / 500 MB'),
+          React.createElement(View, { style: { height: 8, backgroundColor: theme.colors.border, borderRadius: 4, overflow: 'hidden' } },
+            React.createElement(View, { style: { height: '100%', backgroundColor: usedPercent > 75 ? theme.colors.error : theme.colors.primary, width: usedPercent + '%', borderRadius: 4 } })
+          )
+        ),
+        React.createElement(View, { style: { flexDirection: 'row', gap: 12, marginBottom: 24 } },
+          React.createElement(TouchableOpacity, { onPress: handleCreateBackup, disabled: creating || recordings.length === 0, style: { flex: 1, backgroundColor: theme.colors.primary, borderRadius: 16, padding: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, opacity: (creating || recordings.length === 0) ? 0.6 : 1 }, componentId: 'create-backup-btn' },
+            creating ? React.createElement(ActivityIndicator, { size: 'small', color: '#FFF' }) : React.createElement(MaterialIcons, { name: 'backup', size: 20, color: '#FFFFFF' }),
+            React.createElement(Text, { style: { color: '#FFF', fontWeight: '700', fontSize: 14 } }, creating ? TR.creating : TR.createBackup)
+          ),
+          React.createElement(TouchableOpacity, { onPress: handleImportBackup, disabled: isPickerLoading, style: { flex: 1, backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, borderWidth: 1.5, borderColor: theme.colors.border, opacity: isPickerLoading ? 0.6 : 1 }, componentId: 'import-backup-btn' },
+            isPickerLoading ? React.createElement(ActivityIndicator, { size: 'small', color: theme.colors.primary }) : React.createElement(MaterialIcons, { name: 'upload', size: 20, color: theme.colors.primary }),
+            React.createElement(Text, { style: { color: theme.colors.primary, fontWeight: '700', fontSize: 14 } }, isPickerLoading ? TR.loading : TR.import)
+          )
+        ),
+        filePickerError ? React.createElement(View, { style: { backgroundColor: theme.colors.error + '20', borderRadius: 12, padding: 12, marginBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 8 } },
+          React.createElement(MaterialIcons, { name: 'error-outline', size: 18, color: theme.colors.error }),
+          React.createElement(Text, { style: { flex: 1, fontSize: 13, color: theme.colors.error } }, filePickerError)
+        ) : null,
+        React.createElement(Text, { style: { fontSize: 15, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 12 } }, TR.backupHistory),
+        backups.length === 0 ? React.createElement(View, { style: { alignItems: 'center', paddingVertical: 40, backgroundColor: theme.colors.card, borderRadius: 16 } },
+          React.createElement(MaterialIcons, { name: 'cloud-off', size: 44, color: theme.colors.border }),
+          React.createElement(Text, { style: { color: theme.colors.textSecondary, marginTop: 12, fontSize: 14 } }, TR.noBackupsYet)
+        ) : backups.map(function(backup) {
+          return React.createElement(View, { key: backup.id, style: { backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginBottom: 10, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 }, componentId: 'backup-card-' + backup.id },
+            React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center' } },
+              React.createElement(View, { style: { width: 44, height: 44, borderRadius: 14, backgroundColor: theme.colors.overlay, alignItems: 'center', justifyContent: 'center', marginRight: 12 } },
+                React.createElement(MaterialIcons, { name: backup.backup_type === 'imported' ? 'upload' : 'backup', size: 22, color: theme.colors.primary })
+              ),
+              React.createElement(View, { style: { flex: 1 } },
+                React.createElement(Text, { style: { fontSize: 14, fontWeight: '600', color: theme.colors.textPrimary, marginBottom: 2 }, numberOfLines: 1 }, backup.backup_name),
+                React.createElement(View, { style: { flexDirection: 'row', gap: 10 } },
+                  React.createElement(Text, { style: { fontSize: 11, color: theme.colors.textSecondary } }, formatDate(backup.backup_timestamp)),
+                  React.createElement(Text, { style: { fontSize: 11, color: theme.colors.textSecondary } }, backup.recording_count + ' ' + TR.files),
+                  React.createElement(Text, { style: { fontSize: 11, color: theme.colors.textSecondary } }, formatFileSize(backup.total_size_bytes))
+                )
+              ),
+              React.createElement(View, { style: { flexDirection: 'row', gap: 4 } },
+                React.createElement(TouchableOpacity, { onPress: function() { handleShareBackup(backup); }, style: { padding: 6 }, componentId: 'share-backup-' + backup.id },
+                  React.createElement(MaterialIcons, { name: 'share', size: 18, color: theme.colors.textSecondary })
+                ),
+                React.createElement(TouchableOpacity, { onPress: function() { handleDeleteBackup(backup); }, style: { padding: 6 }, componentId: 'delete-backup-' + backup.id },
+                  React.createElement(MaterialIcons, { name: 'delete-outline', size: 18, color: theme.colors.error })
+                )
+              )
+            )
+          );
+        })
+      )
+    );
+  };
+// @end:BackupsScreen
+
+  // @section:SettingsScreen @depends:[ThemeContext]
+var SettingsScreen = function(props) {
+    var themeCtx = useTheme();
+    var theme = themeCtx.theme;
+    var darkMode = themeCtx.darkMode;
+    var toggleDarkMode = themeCtx.toggleDarkMode;
+    var insets = useSafeAreaInsets();
+    var scrollBottomPadding = Platform.OS === 'web' ? WEB_TAB_MENU_PADDING : (TAB_MENU_HEIGHT + insets.bottom + SCROLL_EXTRA_PADDING);
+    var qualityState = useState('high');
+    var quality = qualityState[0];
+    var setQuality = qualityState[1];
+    var autoSaveState = useState(true);
+    var autoSave = autoSaveState[0];
+    var setAutoSave = autoSaveState[1];
+    var autoBackupState = useState(false);
+    var autoBackup = autoBackupState[0];
+    var setAutoBackup = autoBackupState[1];
+    var defaultSpeedState = useState('1');
+    var defaultSpeed = defaultSpeedState[0];
+    var setDefaultSpeed = defaultSpeedState[1];
+    var SettingRow = function(rowProps) {
+      return React.createElement(TouchableOpacity, { onPress: rowProps.onPress, style: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: 0.5, borderBottomColor: theme.colors.border }, activeOpacity: rowProps.onPress ? 0.7 : 1, componentId: rowProps.componentId },
+        React.createElement(View, { style: { width: 36, height: 36, borderRadius: 10, backgroundColor: (rowProps.iconBg || theme.colors.overlay), alignItems: 'center', justifyContent: 'center', marginRight: 12 } },
+          React.createElement(MaterialIcons, { name: rowProps.icon, size: 18, color: rowProps.iconColor || theme.colors.primary })
+        ),
+        React.createElement(View, { style: { flex: 1 } },
+          React.createElement(Text, { style: { fontSize: 15, fontWeight: '500', color: theme.colors.textPrimary } }, rowProps.title),
+          rowProps.subtitle ? React.createElement(Text, { style: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 1 } }, rowProps.subtitle) : null
+        ),
+        rowProps.rightEl ? rowProps.rightEl : (rowProps.onPress ? React.createElement(MaterialIcons, { name: 'chevron-right', size: 20, color: theme.colors.textSecondary }) : null)
+      );
+    };
+    var Switch = require('react-native').Switch;
+    var SwitchEl = function(val, cb) { return React.createElement(Switch, { value: val, onValueChange: cb, trackColor: { false: theme.colors.border, true: theme.colors.primary }, thumbColor: '#FFFFFF' }); };
+    var qualityOptions = ['low', 'medium', 'high'];
+    var speedOptions = ['0.5', '1', '1.5', '2'];
+    return React.createElement(View, { style: { flex: 1, backgroundColor: theme.colors.background } },
+      React.createElement(View, { style: { backgroundColor: theme.colors.primary, paddingTop: insets.top + 12, paddingBottom: 20, paddingHorizontal: 20 } },
+        React.createElement(Text, { style: { fontSize: 20, fontWeight: '800', color: '#FFFFFF' }, componentId: 'settings-title' }, TR.settings),
+        React.createElement(Text, { style: { fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 } }, TR.customizeExperience)
+      ),
+      React.createElement(ScrollView, { style: { flex: 1 }, contentContainerStyle: { paddingTop: 20, paddingBottom: scrollBottomPadding }, showsVerticalScrollIndicator: false },
+        React.createElement(Text, { style: { fontSize: 11, fontWeight: '700', color: theme.colors.textSecondary, paddingHorizontal: 16, marginBottom: 6, letterSpacing: 0.8 } }, TR.appearance.toUpperCase()),
+        React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 16, marginHorizontal: 16, marginBottom: 20, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 } },
+          React.createElement(SettingRow, { icon: 'dark-mode', iconBg: '#1A1A2E20', iconColor: '#1A1A2E', title: TR.darkMode, subtitle: darkMode ? TR.currentlyEnabled : TR.currentlyDisabled, componentId: 'dark-mode-row', rightEl: SwitchEl(darkMode, toggleDarkMode) })
+        ),
+        React.createElement(Text, { style: { fontSize: 11, fontWeight: '700', color: theme.colors.textSecondary, paddingHorizontal: 16, marginBottom: 6, letterSpacing: 0.8 } }, TR.recording.toUpperCase()),
+        React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 16, marginHorizontal: 16, marginBottom: 20, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 } },
+          React.createElement(SettingRow, { icon: 'save-alt', iconBg: '#10B98120', iconColor: '#10B981', title: TR.autoSaveRecordings, subtitle: 'Kayıtları otomatik kaydet', componentId: 'auto-save-row', rightEl: SwitchEl(autoSave, setAutoSave) }),
+          React.createElement(View, { style: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: theme.colors.border } },
+            React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 } },
+              React.createElement(View, { style: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#F59E0B20', alignItems: 'center', justifyContent: 'center', marginRight: 12 } },
+                React.createElement(MaterialIcons, { name: 'high-quality', size: 18, color: '#F59E0B' })
+              ),
+              React.createElement(Text, { style: { fontSize: 15, fontWeight: '500', color: theme.colors.textPrimary } }, TR.audioQuality)
+            ),
+            React.createElement(View, { style: { flexDirection: 'row', gap: 8 } },
+              qualityOptions.map(function(q) {
+                return React.createElement(TouchableOpacity, { key: q, onPress: function() { setQuality(q); }, style: { flex: 1, paddingVertical: 8, borderRadius: 10, backgroundColor: quality === q ? theme.colors.primary : theme.colors.overlay, alignItems: 'center' }, componentId: 'quality-' + q },
+                  React.createElement(Text, { style: { fontSize: 13, fontWeight: quality === q ? '700' : '500', color: quality === q ? '#FFF' : theme.colors.textSecondary } }, q === 'low' ? TR.low : (q === 'medium' ? TR.medium : TR.high))
+                );
+              })
+            )
+          )
+        ),
+        React.createElement(Text, { style: { fontSize: 11, fontWeight: '700', color: theme.colors.textSecondary, paddingHorizontal: 16, marginBottom: 6, letterSpacing: 0.8 } }, TR.playback.toUpperCase()),
+        React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 16, marginHorizontal: 16, marginBottom: 20, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 } },
+          React.createElement(View, { style: { paddingHorizontal: 16, paddingVertical: 12 } },
+            React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 } },
+              React.createElement(View, { style: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#5B8DEE20', alignItems: 'center', justifyContent: 'center', marginRight: 12 } },
+                React.createElement(MaterialIcons, { name: 'speed', size: 18, color: '#5B8DEE' })
+              ),
+              React.createElement(Text, { style: { fontSize: 15, fontWeight: '500', color: theme.colors.textPrimary } }, TR.defaultPlaybackSpeed)
+            ),
+            React.createElement(View, { style: { flexDirection: 'row', gap: 8 } },
+              speedOptions.map(function(s) {
+                return React.createElement(TouchableOpacity, { key: s, onPress: function() { setDefaultSpeed(s); }, style: { flex: 1, paddingVertical: 8, borderRadius: 10, backgroundColor: defaultSpeed === s ? theme.colors.primary : theme.colors.overlay, alignItems: 'center' }, componentId: 'speed-' + s },
+                  React.createElement(Text, { style: { fontSize: 13, fontWeight: defaultSpeed === s ? '700' : '500', color: defaultSpeed === s ? '#FFF' : theme.colors.textSecondary } }, s + 'x')
+                );
+              })
+            )
+          )
+        ),
+        React.createElement(Text, { style: { fontSize: 11, fontWeight: '700', color: theme.colors.textSecondary, paddingHorizontal: 16, marginBottom: 6, letterSpacing: 0.8 } }, TR.backup.toUpperCase()),
+        React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 16, marginHorizontal: 16, marginBottom: 20, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 } },
+          React.createElement(SettingRow, { icon: 'backup', iconBg: '#10B98120', iconColor: '#10B981', title: TR.automaticBackup, subtitle: TR.backupRecordingsDaily, componentId: 'auto-backup-row', rightEl: SwitchEl(autoBackup, setAutoBackup) })
+        ),
+        React.createElement(Text, { style: { fontSize: 11, fontWeight: '700', color: theme.colors.textSecondary, paddingHorizontal: 16, marginBottom: 6, letterSpacing: 0.8 } }, TR.about.toUpperCase()),
+        React.createElement(View, { style: { backgroundColor: theme.colors.card, borderRadius: 16, marginHorizontal: 16, marginBottom: 20, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 } },
+          React.createElement(SettingRow, { icon: 'info-outline', iconBg: theme.colors.overlay, title: TR.appVersion, subtitle: '1.0.0', componentId: 'version-row' }),
+          React.createElement(SettingRow, { icon: 'security', iconBg: '#5B8DEE20', iconColor: '#5B8DEE', title: TR.privacyPolicy, componentId: 'privacy-row', onPress: function() { if (Platform.OS === 'web') window.alert(TR.privacyPolicy); else Alert.alert(TR.privacyPolicy, TR.privacyMessage); } }),
+          React.createElement(SettingRow, { icon: 'star-outline', iconBg: '#F59E0B20', iconColor: '#F59E0B', title: TR.rateVoiceVault, componentId: 'rate-row', onPress: function() { if (Platform.OS === 'web') window.alert(TR.thanks); else Alert.alert(TR.thanks, TR.thankYou); } })
+        ),
+        React.createElement(View, { style: { alignItems: 'center', paddingVertical: 16 } },
+          React.createElement(Text, { style: { fontSize: 13, fontWeight: '700', color: theme.colors.primary } }, 'VoiceVault'),
+          React.createElement(Text, { style: { fontSize: 11, color: theme.colors.textSecondary, marginTop: 2 } }, TR.premiumVoiceRecording)
+        )
+      )
+    );
+  };
+// @end:SettingsScreen
+
+  // @section:RecordingOverlay-state @depends:[imports,theme,useTheme]
+var RecordingOverlayState = {
+  isVisible: false,
+  setIsVisible: null,
+  isRecording: false,
+  setIsRecording: null,
+  duration: 0,
+  setDuration: null,
+  isRecordingPaused: false,
+  setIsRecordingPaused: null,
+  waveform: [],
+  setWaveform: null,
+  lastRecUri: null,
+  setLastRecUri: null,
+  showSave: false,
+  setShowSave: null
+};
+// @end:RecordingOverlay-state
+
+  // @section:RecordingOverlay @depends:[imports,theme,useTheme,SaveRecordingModal,helpers]
+var RecordingOverlay = function(props) {
+  var visible = props.visible;
+  var onClose = props.onClose;
+  var themeCtx = useTheme();
+  var theme = themeCtx.theme;
+  var insets = useSafeAreaInsets();
+  
+  const audioHook = useAudio();
+  var startRec = audioHook.startRecording;
+  var stopRec = audioHook.stopRecording;
+  var isRecording = audioHook.isRecording;
+  
+  var isRecordingPausedState = useState(false);
+  var isRecordingPaused = isRecordingPausedState[0];
+  var setIsRecordingPaused = isRecordingPausedState[1];
+  
+  var durationState = useState(0);
+  var duration = durationState[0];
+  var setDuration = durationState[1];
+  
+  var timerRef = useRef(null);
+  
+  var waveformState = useState(Array.from({ length: 24 }, function() { return 8; }));
+  var waveform = waveformState[0];
+  var setWaveform = waveformState[1];
+  
+  var showSaveState = useState(false);
+  var showSave = showSaveState[0];
+  var setShowSave = showSaveState[1];
+  
+  var lastRecUriState = useState(null);
+  var lastRecUri = lastRecUriState[0];
+  var setLastRecUri = lastRecUriState[1];
+  
+  var insertRec = useMutation('recordings', 'insert').mutate;
+  var foldersQuery = useQuery('folders', {}, { column: 'name', ascending: true });
+  var folders = foldersQuery.data || [];
+  
+  useEffect(function() {
+    if (isRecording && !isRecordingPaused) {
+      timerRef.current = setInterval(function() {
+        setDuration(function(prev) { return prev + 1; });
+        setWaveform(function() { return Array.from({ length: 24 }, function() { return 6 + Math.random() * 34; }); });
+      }, 1000);
+    } else {
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+      if (!isRecording) { setWaveform(Array.from({ length: 24 }, function() { return 8; })); }
+    }
+    return function() { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
+  }, [isRecording, isRecordingPaused]);
+  
+  useEffect(function() {
+    if (!visible) {
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+      setDuration(0);
+      setIsRecordingPaused(false);
+      setWaveform(Array.from({ length: 24 }, function() { return 8; }));
+    }
+  }, [visible]);
+  
+  var handleStartRecording = function() {
+    setDuration(0);
+    startRec().catch(function(err) {
+      if (Platform.OS === 'web') window.alert(TR.microphoneError + err.message);
+      else Alert.alert(TR.error, err.message);
+    });
+  };
+  
+  var handleStopRecording = function() {
+    stopRec().then(function(result) {
+      if (result && result.uri) { setLastRecUri(result.uri); setShowSave(true); }
+      else if (result && result.error) {
+        if (Platform.OS === 'web') window.alert(result.error); else Alert.alert(TR.error, result.error);
+      }
+      setIsRecordingPaused(false);
+    });
+  };
+  
+  var handleSaveRecording = function(title, folderId) {
+    insertRec({ title: title, duration_seconds: duration, file_size_bytes: Math.floor(duration * 16000), folder_id: folderId || null, is_favorite: false, audio_file_path: lastRecUri || 'local://recording_' + Date.now(), recording_date: new Date().toISOString() }).then(function() {
+      setShowSave(false); setLastRecUri(null); setDuration(0);
+      onClose();
+      if (Platform.OS === 'web') window.alert(TR.recordingSaved); else Alert.alert(TR.ok, TR.recordingSaved);
+    }).catch(function(err) {
+      if (Platform.OS === 'web') window.alert(err.message); else Alert.alert(TR.error, err.message);
+    });
+  };
+  
+  var handleDiscardRecording = function() {
+    if (Platform.OS === 'web') {
+      if (window.confirm(TR.discardRecording + '?')) { setShowSave(false); setLastRecUri(null); setDuration(0); }
+    } else {
+      Alert.alert(TR.discard, TR.discardRecording + '?', [{ text: TR.keep, style: 'cancel' }, { text: TR.discard, style: 'destructive', onPress: function() { setShowSave(false); setLastRecUri(null); setDuration(0); } }]);
+    }
+  };
+  
+  if (!visible) return null;
+  
+  return React.createElement(View, { style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999, justifyContent: 'flex-end' } },
+    React.createElement(View, { style: { backgroundColor: theme.colors.background, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24, minHeight: '60%' } },
+      React.createElement(View, { style: { width: 40, height: 4, backgroundColor: theme.colors.border, borderRadius: 2, alignSelf: 'center', marginBottom: 24 } }),
+      
+      React.createElement(View, { style: { alignItems: 'center', marginBottom: 40 } },
+        React.createElement(Text, { style: { fontSize: 56, fontWeight: '100', color: theme.colors.textPrimary, letterSpacing: 2, fontVariant: ['tabular-nums'] }, componentId: 'overlay-timer' }, formatDuration(duration))
+      ),
+      
+      React.createElement(View, { style: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', height: 60, gap: 3, marginBottom: 48 }, componentId: 'overlay-waveform' },
+        waveform.map(function(h, i) {
+          var active = isRecording && !isRecordingPaused;
+          return React.createElement(View, { key: String(i), style: { width: 6, height: active ? h : 8, borderRadius: 3, backgroundColor: active ? (i % 3 === 0 ? theme.colors.primary : theme.colors.accent) : theme.colors.border } });
+        })
+      ),
+      
+      React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 32 } },
+        isRecording ? React.createElement(TouchableOpacity, { onPress: function() { setIsRecordingPaused(function(p) { return !p; }); }, style: { width: 52, height: 52, borderRadius: 26, backgroundColor: theme.colors.cardAlt, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: theme.colors.border }, componentId: 'overlay-pause-resume-btn' },
+          React.createElement(MaterialIcons, { name: isRecordingPaused ? 'play-arrow' : 'pause', size: 24, color: theme.colors.primary })
+        ) : React.createElement(View, { style: { width: 52, height: 52 } }),
+        
+        React.createElement(TouchableOpacity, { onPress: isRecording ? handleStopRecording : handleStartRecording, style: { width: 80, height: 80, borderRadius: 40, backgroundColor: isRecording ? theme.colors.error : theme.colors.primary, alignItems: 'center', justifyContent: 'center', shadowColor: isRecording ? theme.colors.error : theme.colors.primary, shadowOpacity: 0.4, shadowRadius: 16, elevation: 10 }, componentId: 'overlay-main-record-btn' },
+          React.createElement(MaterialIcons, { name: isRecording ? 'stop' : 'mic', size: 36, color: '#FFFFFF' })
+        ),
+        
+        React.createElement(TouchableOpacity, { onPress: onClose, style: { width: 52, height: 52, borderRadius: 26, backgroundColor: theme.colors.cardAlt, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: theme.colors.border }, componentId: 'overlay-close-btn' },
+          React.createElement(MaterialIcons, { name: 'close', size: 24, color: theme.colors.textSecondary })
+        )
+      ),
+      
+      isRecording ? React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 } },
+        React.createElement(View, { style: { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.colors.error } }),
+        React.createElement(Text, { style: { fontSize: 12, color: theme.colors.error, fontWeight: '600' } }, isRecordingPaused ? TR.paused : TR.recording)
+      ) : null
+    ),
+    React.createElement(SaveRecordingModal, { visible: showSave, onSave: handleSaveRecording, onDiscard: handleDiscardRecording, duration: duration, folders: folders, insetsBottom: insets.bottom })
+  );
+};
+// @end:RecordingOverlay
+
+  // @section:FloatingMicButton @depends:[imports,theme,useTheme]
+var FloatingMicButton = function(props) {
+  var onPress = props.onPress;
+  var isRecording = props.isRecording;
+  var themeCtx = useTheme();
+  var theme = themeCtx.theme;
+  var insets = useSafeAreaInsets();
+  
+  return React.createElement(View, { style: { position: 'absolute', bottom: TAB_MENU_HEIGHT + insets.bottom + 16, left: 0, right: 0, alignItems: 'center', zIndex: 100 } },
+    React.createElement(TouchableOpacity, { onPress: onPress, style: { width: 80, height: 80, borderRadius: 40, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', shadowColor: theme.colors.primary, shadowOpacity: isRecording ? 0.5 : 0.3, shadowRadius: isRecording ? 16 : 12, elevation: isRecording ? 10 : 6 }, activeOpacity: 0.8, componentId: 'floating-mic-btn' },
+      React.createElement(MaterialIcons, { name: 'mic', size: 40, color: '#FFFFFF' })
+    )
+  );
+};
+// @end:FloatingMicButton
+
+  // @section:AppRoot @depends:[imports,TabNavigator,FloatingMicButton,RecordingOverlay,useAudio]
+var AppRoot = function() {
+  var recordingOverlayVisibleState = useState(false);
+  var recordingOverlayVisible = recordingOverlayVisibleState[0];
+  var setRecordingOverlayVisible = recordingOverlayVisibleState[1];
+  
+  const audioHook = useAudio();
+  var isRecording = audioHook.isRecording;
+  
+  return React.createElement(View, { style: { flex: 1 } },
+    React.createElement(TabNavigator),
+    React.createElement(FloatingMicButton, { onPress: function() { setRecordingOverlayVisible(true); }, isRecording: isRecording }),
+    React.createElement(RecordingOverlay, { visible: recordingOverlayVisible, onClose: function() { setRecordingOverlayVisible(false); } })
+  );
+};
+// @end:AppRoot
+
+  // @section:TabNavigator @depends:[HomeScreen,LibraryScreen,BackupsScreen,SettingsScreen,navigation-setup]
+var TabNavigator = function() {
+  var insets = useSafeAreaInsets();
+  var themeCtx = useTheme();
+  var theme = themeCtx.theme;
+  return React.createElement(View, { style: { flex: 1, width: '100%', height: '100%', overflow: 'hidden' } },
+    React.createElement(Tab.Navigator, {
+      screenOptions: {
+        headerShown: false,
+        tabBarStyle: { 
+          position: 'absolute', 
+          bottom: 0, 
+          height: Platform.OS === 'web' ? TAB_MENU_HEIGHT : TAB_MENU_HEIGHT + insets.bottom, 
+          paddingBottom: 0, 
+          borderTopWidth: 0, 
+          backgroundColor: theme.colors.card, 
+          shadowColor: '#000', 
+          shadowOpacity: 0.1, 
+          shadowRadius: 12, 
+          elevation: 8 
+        },
+        tabBarItemStyle: { padding: 0 },
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textSecondary
+      }
+    },
+      React.createElement(Tab.Screen, { name: 'Ana Sayfa', component: HomeScreen, options: { tabBarLabel: TR.home, tabBarIcon: function(p) { return React.createElement(MaterialIcons, { name: 'home', size: 24, color: p.color }); } } }),
+      React.createElement(Tab.Screen, { name: 'Kayıtlar', component: LibraryScreen, options: { tabBarLabel: TR.library, tabBarIcon: function(p) { return React.createElement(MaterialIcons, { name: 'library-music', size: 24, color: p.color }); } } }),
+      React.createElement(Tab.Screen, { name: 'Yedekler', component: BackupsScreen, options: { tabBarLabel: TR.backups, tabBarIcon: function(p) { return React.createElement(MaterialIcons, { name: 'backup', size: 24, color: p.color }); } } }),
+      React.createElement(Tab.Screen, { name: 'Ayarlar', component: SettingsScreen, options: { tabBarLabel: TR.settings, tabBarIcon: function(p) { return React.createElement(MaterialIcons, { name: 'settings', size: 24, color: p.color }); } } })
+    )
+  );
+};
+// @end:TabNavigator
+
+  // @section:styles @depends:[theme]
+const styles = StyleSheet.create({
+  flex1: { flex: 1 }
+});
+// @end:styles
+
+  // @section:return @depends:[ThemeProvider,TabNavigator]
+  return React.createElement(ThemeProvider, null,
+    React.createElement(View, { style: { flex: 1, width: '100%', height: '100%' } },
+      React.createElement(StatusBar, { barStyle: 'light-content', backgroundColor: primaryColor }),
+      React.createElement(AppRoot)
+    )
+  );
+  // @end:return
+};
+return ComponentFunction;
