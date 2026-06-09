@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Film/Dizi Arşiv (Sade)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="home">
+  <div class="container">
+    <div class="row" style="margin-top:10px">
+      <div class="card">
+        <div class="badge">🎬 Sade sosyal arşiv</div>
+        <h2 style="margin-top:10px">Arşivle • Puanla • İncele • Paylaş</h2>
+        <p>İzlediklerini arşivine ekle. İstersen toplulukta paylaş, diğerlerinin incelemelerini oku.</p>
+        <div style="height:14px"></div>
+        <div class="notice"><strong>Demo:</strong> Veriler bu tarayıcıda saklanır (localStorage).</div>
+      </div>
+
+      <div class="card" id="auth" style="display:none">
+        <h2>Giriş / Kayıt</h2>
+        <p class="muted">Demo hesap: <b>mehmet / 1234</b></p>
+        <div style="height:12px"></div>
+
+        <div class="row">
+          <div class="card" style="box-shadow:none;background:linear-gradient(180deg,#fff,#f7fbff)">
+            <div class="badge">🔐 Giriş</div>
+            <div style="height:10px"></div>
+            <input class="input" id="lUser" placeholder="Kullanıcı adı" />
+            <div style="height:10px"></div>
+            <input class="input" id="lPass" type="password" placeholder="Şifre" />
+            <div style="height:10px"></div>
+            <div class="row">
+              <button class="btn primary" id="loginBtn">Giriş</button>
+              <button class="btn" id="demoBtn">Demo ile</button>
+            </div>
+          </div>
+
+          <div class="card" style="box-shadow:none;background:linear-gradient(180deg,#fff,#f7fbff)">
+            <div class="badge">✨ Kayıt</div>
+            <div style="height:10px"></div>
+            <input class="input" id="rUser" placeholder="Kullanıcı adı (min 3)" />
+            <div style="height:10px"></div>
+            <input class="input" id="rPass" type="password" placeholder="Şifre (min 4)" />
+            <div style="height:10px"></div>
+            <button class="btn ghost" id="regBtn">Kayıt ol</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="dash" style="display:none">
+        <div class="badge">✅ Giriş yapıldı</div>
+        <h2 style="margin-top:10px">Hoş geldin <span id="hello"></span> 👋</h2>
+        <p>Arşive ekle, sonra istersen topluluğa paylaş.</p>
+
+        <div style="height:12px"></div>
+
+        <div class="row">
+          <div class="card" style="box-shadow:none;background:linear-gradient(180deg,#fff,#f7fbff)">
+            <strong style="font-size:22px" id="kpiA">0</strong>
+            <div class="muted">Arşiv</div>
+          </div>
+          <div class="card" style="box-shadow:none;background:linear-gradient(180deg,#fff,#f7fbff)">
+            <strong style="font-size:22px" id="kpiP">0</strong>
+            <div class="muted">Paylaşım</div>
+          </div>
+          <div class="card" style="box-shadow:none;background:linear-gradient(180deg,#fff,#f7fbff)">
+            <strong style="font-size:22px" id="kpiL">0</strong>
+            <div class="muted">Toplam beğeni</div>
+          </div>
+        </div>
+
+        <div style="height:14px"></div>
+        <div class="row">
+          <button class="btn primary" onclick="location.href='archive.html'">📚 Arşivime git</button>
+          <button class="btn" onclick="location.href='community.html'">🌍 Topluluk</button>
+        </div>
+
+        <div style="height:16px"></div>
+        <h2>Son paylaşımlar</h2>
+        <div class="list" id="recentPosts"></div>
+      </div>
+    </div>
+
+    <div class="footer">© Sade Film/Dizi Arşiv • localStorage demo</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

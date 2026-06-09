@@ -1,0 +1,14 @@
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\bin\Debug\net10.0\HavaDurumuGoruntuleyici.exe
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\bin\Debug\net10.0\HavaDurumuGoruntuleyici.deps.json
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\bin\Debug\net10.0\HavaDurumuGoruntuleyici.runtimeconfig.json
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\bin\Debug\net10.0\HavaDurumuGoruntuleyici.dll
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\bin\Debug\net10.0\HavaDurumuGoruntuleyici.pdb
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\obj\Debug\net10.0\HavaDurumuGoruntuleyici.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\obj\Debug\net10.0\HavaDurumuGoruntuleyici.AssemblyInfoInputs.cache
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\obj\Debug\net10.0\HavaDurumuGoruntuleyici.AssemblyInfo.cs
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\obj\Debug\net10.0\HavaDurumuGoruntuleyici.csproj.CoreCompileInputs.cache
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\obj\Debug\net10.0\HavaDurumuGoruntuleyici.dll
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\obj\Debug\net10.0\refint\HavaDurumuGoruntuleyici.dll
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\obj\Debug\net10.0\HavaDurumuGoruntuleyici.pdb
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\obj\Debug\net10.0\HavaDurumuGoruntuleyici.genruntimeconfig.cache
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Hava_Durumu_Görüntüleyici\obj\Debug\net10.0\ref\HavaDurumuGoruntuleyici.dll

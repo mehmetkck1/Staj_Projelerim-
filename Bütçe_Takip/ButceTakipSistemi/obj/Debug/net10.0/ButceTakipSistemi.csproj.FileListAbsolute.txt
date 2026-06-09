@@ -1,0 +1,14 @@
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\bin\Debug\net10.0\ButceTakipSistemi.exe
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\bin\Debug\net10.0\ButceTakipSistemi.deps.json
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\bin\Debug\net10.0\ButceTakipSistemi.runtimeconfig.json
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\bin\Debug\net10.0\ButceTakipSistemi.dll
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\bin\Debug\net10.0\ButceTakipSistemi.pdb
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\obj\Debug\net10.0\ButceTakipSistemi.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\obj\Debug\net10.0\ButceTakipSistemi.AssemblyInfoInputs.cache
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\obj\Debug\net10.0\ButceTakipSistemi.AssemblyInfo.cs
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\obj\Debug\net10.0\ButceTakipSistemi.csproj.CoreCompileInputs.cache
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\obj\Debug\net10.0\ButceTakipSistemi.dll
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\obj\Debug\net10.0\refint\ButceTakipSistemi.dll
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\obj\Debug\net10.0\ButceTakipSistemi.pdb
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\obj\Debug\net10.0\ButceTakipSistemi.genruntimeconfig.cache
+C:\Users\mehme\OneDrive\Belgeler\Documents\Masaüstü\Bütçe_Takip\ButceTakipSistemi\obj\Debug\net10.0\ref\ButceTakipSistemi.dll

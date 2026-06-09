@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Topluluk</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="community">
+  <div class="container">
+    <div class="card" style="margin-top:10px">
+      <div class="badge">🌍 Topluluk</div>
+      <h2 style="margin-top:10px">İnceleme akışı</h2>
+      <p>Beğen, yorum yap. Paylaşım yapmak için arşivinden “Paylaş” kullan.</p>
+
+      <div style="height:12px"></div>
+
+      <div class="row" style="align-items:end">
+        <div>
+          <label class="pill">Ara</label>
+          <input class="input" id="cq" placeholder="Film adı veya inceleme..." />
+        </div>
+        <div>
+          <label class="pill">Filtre</label>
+          <select class="select" id="ckind">
+            <option value="all">Tümü</option>
+            <option value="Film">Film</option>
+            <option value="Dizi">Dizi</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="list" id="postList"></div>
+
+    <div class="footer">Not: Fotoğraflar tarayıcıda saklanır. Çok büyük foto koyma.</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

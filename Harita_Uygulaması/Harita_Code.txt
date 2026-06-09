@@ -1,0 +1,531 @@
+const ComponentFunction = function() {
+  // @section:imports @depends:[]
+  const React = require('react');
+  const { useState, useEffect, useCallback, useMemo } = React;
+  const { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar, ActivityIndicator, Dimensions, Alert } = require('react-native');
+  const { MaterialIcons } = require('@expo/vector-icons');
+  const { useSafeAreaInsets } = require('react-native-safe-area-context');
+  const { useLocation } = require('platform-hooks');
+  const { useMaps } = require('platform-hooks');
+  // @end:imports
+
+  // @section:theme @depends:[]
+  var primaryColor = '#2E86AB';
+  var accentColor = '#A23B72';
+  var backgroundColor = '#F0F4F8';
+  var cardColor = '#FFFFFF';
+  var textPrimary = '#1A1A2E';
+  var textSecondary = '#6B7280';
+  var successColor = '#10B981';
+  var errorColor = '#EF4444';
+  var SCREEN_HEIGHT = Dimensions.get('window').height;
+  var SCREEN_WIDTH = Dimensions.get('window').width;
+  // @end:theme
+
+  // @section:PermissionDeniedView @depends:[styles,theme]
+  var PermissionDeniedView = function(props) {
+    var onRequest = props.onRequest;
+    var insets = useSafeAreaInsets();
+    return React.createElement(View, {
+      style: {
+        flex: 1,
+        backgroundColor: backgroundColor,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 32,
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom
+      },
+      componentId: 'permission-denied-container'
+    },
+      React.createElement(View, {
+        style: {
+          width: 96,
+          height: 96,
+          borderRadius: 48,
+          backgroundColor: primaryColor + '18',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 28
+        },
+        componentId: 'permission-icon-circle'
+      },
+        React.createElement(MaterialIcons, { name: 'location-off', size: 48, color: primaryColor })
+      ),
+      React.createElement(Text, {
+        style: {
+          fontSize: 24,
+          fontWeight: '700',
+          color: textPrimary,
+          textAlign: 'center',
+          marginBottom: 14,
+          letterSpacing: -0.3
+        },
+        componentId: 'permission-title'
+      }, 'Location Access Required'),
+      React.createElement(Text, {
+        style: {
+          fontSize: 15,
+          color: textSecondary,
+          textAlign: 'center',
+          lineHeight: 23,
+          marginBottom: 36
+        },
+        componentId: 'permission-body'
+      }, 'This app needs access to your device\'s GPS to display your current location on the map. Please grant location permission to continue.'),
+      React.createElement(TouchableOpacity, {
+        onPress: onRequest,
+        style: {
+          backgroundColor: primaryColor,
+          paddingVertical: 15,
+          paddingHorizontal: 36,
+          borderRadius: 14,
+          flexDirection: 'row',
+          alignItems: 'center',
+          shadowColor: primaryColor,
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.35,
+          shadowRadius: 12,
+          elevation: 8
+        },
+        componentId: 'permission-request-button'
+      },
+        React.createElement(MaterialIcons, { name: 'my-location', size: 20, color: '#FFFFFF', style: { marginRight: 10 } }),
+        React.createElement(Text, {
+          style: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', letterSpacing: 0.2 }
+        }, 'Grant Location Access')
+      ),
+      React.createElement(Text, {
+        style: {
+          marginTop: 20,
+          fontSize: 13,
+          color: textSecondary,
+          textAlign: 'center',
+          lineHeight: 19
+        },
+        componentId: 'permission-hint'
+      }, 'If the dialog does not appear, please enable location permission in your device Settings.')
+    );
+  };
+  // @end:PermissionDeniedView
+
+  // @section:CoordinatesPanel @depends:[styles,theme]
+  var CoordinatesPanel = function(props) {
+    var lat = props.lat;
+    var lng = props.lng;
+    var accuracy = props.accuracy;
+    var insets = useSafeAreaInsets();
+    var formatCoord = function(val, pos, neg) {
+      if (val === null || val === undefined) return '—';
+      var dir = val >= 0 ? pos : neg;
+      return Math.abs(val).toFixed(6) + '° ' + dir;
+    };
+    var accuracyLabel = accuracy ? (accuracy < 10 ? 'High' : accuracy < 50 ? 'Medium' : 'Low') : null;
+    var accuracyColor = accuracy ? (accuracy < 10 ? successColor : accuracy < 50 ? '#F59E0B' : errorColor) : textSecondary;
+    return React.createElement(View, {
+      style: {
+        position: 'absolute',
+        bottom: Platform.OS === 'web' ? 16 : insets.bottom + 16,
+        left: 16,
+        right: 16,
+        backgroundColor: cardColor,
+        borderRadius: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 8,
+        flexDirection: 'row',
+        alignItems: 'center'
+      },
+      componentId: 'coordinates-panel'
+    },
+      React.createElement(View, {
+        style: {
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          backgroundColor: primaryColor + '15',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginRight: 12
+        }
+      },
+        React.createElement(MaterialIcons, { name: 'place', size: 20, color: primaryColor })
+      ),
+      React.createElement(View, { style: { flex: 1 } },
+        React.createElement(View, {
+          style: { flexDirection: 'row', marginBottom: 2 }
+        },
+          React.createElement(View, { style: { flex: 1 } },
+            React.createElement(Text, {
+              style: { fontSize: 9, color: textSecondary, fontWeight: '600', letterSpacing: 0.6, marginBottom: 1 }
+            }, 'LAT'),
+            React.createElement(Text, {
+              style: { fontSize: 12, color: textPrimary, fontWeight: '700', fontVariant: ['tabular-nums'] },
+              componentId: 'lat-value'
+            }, formatCoord(lat, 'N', 'S'))
+          ),
+          React.createElement(View, { style: { width: 1, backgroundColor: '#E5E7EB', marginHorizontal: 10 } }),
+          React.createElement(View, { style: { flex: 1 } },
+            React.createElement(Text, {
+              style: { fontSize: 9, color: textSecondary, fontWeight: '600', letterSpacing: 0.6, marginBottom: 1 }
+            }, 'LNG'),
+            React.createElement(Text, {
+              style: { fontSize: 12, color: textPrimary, fontWeight: '700', fontVariant: ['tabular-nums'] },
+              componentId: 'lng-value'
+            }, formatCoord(lng, 'E', 'W'))
+          )
+        ),
+        accuracyLabel ? React.createElement(View, {
+          style: { flexDirection: 'row', alignItems: 'center', marginTop: 3 }
+        },
+          React.createElement(View, {
+            style: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: accuracyColor, marginRight: 4 }
+          }),
+          React.createElement(Text, {
+            style: { fontSize: 10, color: accuracyColor, fontWeight: '600' }
+          }, accuracyLabel + ' ±' + Math.round(accuracy) + 'm')
+        ) : null
+      )
+    );
+  };
+  // @end:CoordinatesPanel
+
+  // @section:LocationMapScreen @depends:[theme,PermissionDeniedView,CoordinatesPanel,styles]
+  var LocationMapScreen = function() {
+    var insets = useSafeAreaInsets();
+
+    var locationHook = useLocation();
+    var getCurrentLocation = locationHook.getCurrentLocation;
+    var watchLocation = locationHook.watchLocation;
+    var stopWatching = locationHook.stopWatching;
+
+    var mapsHook = useMaps({
+      latitude: 37.7749,
+      longitude: -122.4194,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05
+    });
+    var MapView = mapsHook.MapView;
+    var Marker = mapsHook.Marker;
+    var animateToRegion = mapsHook.animateToRegion;
+    var mapRef = mapsHook.mapRef;
+    var region = mapsHook.region;
+    var setRegion = mapsHook.setRegion;
+    var isAvailable = mapsHook.isAvailable;
+    var markers = mapsHook.markers;
+    var addMarker = mapsHook.addMarker;
+
+    var loadingState = useState(true);
+    var loading = loadingState[0];
+    var setLoading = loadingState[1];
+
+    var permDeniedState = useState(false);
+    var permissionDenied = permDeniedState[0];
+    var setPermissionDenied = permDeniedState[1];
+
+    var locationState = useState(null);
+    var currentLocation = locationState[0];
+    var setCurrentLocation = locationState[1];
+
+    var accuracyState = useState(null);
+    var accuracy = accuracyState[0];
+    var setAccuracy = accuracyState[1];
+
+    var errorMsgState = useState(null);
+    var errorMsg = errorMsgState[0];
+    var setErrorMsg = errorMsgState[1];
+
+    var startLocationServices = useCallback(function() {
+      setLoading(true);
+      setPermissionDenied(false);
+      setErrorMsg(null);
+
+      getCurrentLocation().then(function(result) {
+        if (result.error) {
+          setLoading(false);
+          if (result.error.toLowerCase().indexOf('permission') !== -1 || result.error.toLowerCase().indexOf('denied') !== -1) {
+            setPermissionDenied(true);
+          } else {
+            setErrorMsg(result.error);
+          }
+          return;
+        }
+        var newLocation = { latitude: result.latitude, longitude: result.longitude };
+        setCurrentLocation(newLocation);
+        if (result.accuracy) setAccuracy(result.accuracy);
+        
+        if (addMarker) {
+          addMarker({
+            id: 'user-location',
+            coordinate: newLocation,
+            title: 'Your Location',
+            description: result.latitude.toFixed(6) + ', ' + result.longitude.toFixed(6)
+          });
+        }
+        
+        if (animateToRegion) {
+          animateToRegion({
+            latitude: result.latitude,
+            longitude: result.longitude,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.015
+          }, 600);
+        }
+        setLoading(false);
+      }).catch(function(err) {
+        setLoading(false);
+        setErrorMsg('Failed to get location: ' + (err.message || 'Unknown error'));
+      });
+    }, [getCurrentLocation, animateToRegion, addMarker, setLoading, setPermissionDenied, setErrorMsg, setCurrentLocation, setAccuracy]);
+
+    useEffect(function() {
+      if (!currentLocation) {
+        startLocationServices();
+      }
+      var unsubscribe = watchLocation(function(result) {
+        if (result.error) return;
+        var newLocation = { latitude: result.latitude, longitude: result.longitude };
+        setCurrentLocation(newLocation);
+        if (result.accuracy) setAccuracy(result.accuracy);
+        
+        if (addMarker) {
+          addMarker({
+            id: 'user-location',
+            coordinate: newLocation,
+            title: 'Your Location',
+            description: result.latitude.toFixed(6) + ', ' + result.longitude.toFixed(6)
+          });
+        }
+      });
+      return function() { 
+        stopWatching();
+      };
+    }, [watchLocation, stopWatching, addMarker, startLocationServices, currentLocation]);
+
+    var handleRecenter = useCallback(function() {
+      if (!currentLocation) return;
+      if (animateToRegion) {
+        animateToRegion({
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01
+        }, 500);
+      }
+    }, [currentLocation, animateToRegion]);
+
+    if (permissionDenied) {
+      return React.createElement(View, { style: { flex: 1, backgroundColor: backgroundColor } },
+        React.createElement(StatusBar, { barStyle: 'dark-content', backgroundColor: backgroundColor }),
+        React.createElement(PermissionDeniedView, { onRequest: startLocationServices })
+      );
+    }
+
+    var mapContent = isAvailable && MapView
+      ? React.createElement(MapView, {
+          ref: mapRef,
+          provider: 'google',
+          style: { flex: 1, width: '100%', height: '100%' },
+          region: region,
+          onRegionChangeComplete: setRegion,
+          showsUserLocation: true,
+          showsMyLocationButton: false,
+          showsCompass: true,
+          zoomEnabled: true,
+          scrollEnabled: true,
+          pitchEnabled: true,
+          rotateEnabled: true,
+          loadingEnabled: true,
+          loadingIndicatorColor: primaryColor,
+          loadingBackgroundColor: backgroundColor,
+          componentId: 'map-view'
+        },
+          markers && markers.length > 0 ? markers.map(function(m) {
+            return React.createElement(Marker, {
+              key: m.id,
+              coordinate: m.coordinate,
+              title: m.title,
+              description: m.description,
+              componentId: 'map-marker-' + m.id
+            });
+          }) : null
+        )
+      : React.createElement(View, {
+          style: { flex: 1, backgroundColor: backgroundColor, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
+          componentId: 'map-placeholder'
+        },
+          React.createElement(View, {
+            style: {
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: primaryColor + '18',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 16
+            }
+          },
+            React.createElement(MaterialIcons, { name: 'map', size: 48, color: primaryColor })
+          ),
+          React.createElement(Text, {
+            style: { fontSize: 16, fontWeight: '700', color: textPrimary, textAlign: 'center', marginBottom: 8 }
+          }, 'Map Not Available'),
+          React.createElement(Text, {
+            style: { fontSize: 14, color: textSecondary, textAlign: 'center', lineHeight: 20 }
+          }, 'Google Maps will load when you open this app on your device. Make sure Google Maps API key is configured.')
+        );
+
+    return React.createElement(View, { style: { flex: 1, backgroundColor: '#000' }, componentId: 'map-screen' },
+      React.createElement(StatusBar, { barStyle: 'light-content', translucent: true, backgroundColor: 'transparent' }),
+
+      mapContent,
+
+      loading ? React.createElement(View, {
+        style: {
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(255,255,255,0.85)',
+          alignItems: 'center',
+          justifyContent: 'center'
+        },
+        componentId: 'loading-overlay'
+      },
+        React.createElement(View, {
+          style: {
+            backgroundColor: cardColor,
+            borderRadius: 20,
+            padding: 28,
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.12,
+            shadowRadius: 16,
+            elevation: 10
+          }
+        },
+          React.createElement(ActivityIndicator, { size: 'large', color: primaryColor }),
+          React.createElement(Text, {
+            style: { marginTop: 14, color: textPrimary, fontSize: 15, fontWeight: '600' }
+          }, 'Finding your location…'),
+          React.createElement(Text, {
+            style: { marginTop: 6, color: textSecondary, fontSize: 13 }
+          }, 'Please allow location access')
+        )
+      ) : null,
+
+      errorMsg && !loading ? React.createElement(View, {
+        style: {
+          position: 'absolute',
+          top: insets.top + 16,
+          left: 16,
+          right: 16,
+          backgroundColor: '#FEF2F2',
+          borderRadius: 12,
+          padding: 14,
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderWidth: 1,
+          borderColor: '#FECACA'
+        },
+        componentId: 'error-banner'
+      },
+        React.createElement(MaterialIcons, { name: 'error-outline', size: 20, color: errorColor, style: { marginRight: 10 } }),
+        React.createElement(Text, { style: { flex: 1, color: '#991B1B', fontSize: 13, lineHeight: 18 } }, errorMsg),
+        React.createElement(TouchableOpacity, {
+          onPress: startLocationServices,
+          style: { marginLeft: 8 },
+          componentId: 'retry-error-button'
+        },
+          React.createElement(MaterialIcons, { name: 'refresh', size: 20, color: errorColor })
+        )
+      ) : null,
+
+      !loading ? React.createElement(View, {
+        style: {
+          position: 'absolute',
+          top: insets.top + 12,
+          left: 16,
+          backgroundColor: cardColor,
+          borderRadius: 12,
+          paddingVertical: 8,
+          paddingHorizontal: 14,
+          flexDirection: 'row',
+          alignItems: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.12,
+          shadowRadius: 8,
+          elevation: 5
+        },
+        componentId: 'app-header-badge'
+      },
+        React.createElement(MaterialIcons, { name: 'location-on', size: 18, color: primaryColor, style: { marginRight: 6 } }),
+        React.createElement(Text, {
+          style: { color: textPrimary, fontSize: 14, fontWeight: '700', letterSpacing: -0.2 }
+        }, 'LocationMap'),
+        currentLocation ? React.createElement(View, {
+          style: {
+            marginLeft: 8,
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: successColor
+          }
+        }) : null
+      ) : null,
+
+      React.createElement(CoordinatesPanel, {
+        lat: currentLocation ? currentLocation.latitude : null,
+        lng: currentLocation ? currentLocation.longitude : null,
+        accuracy: accuracy
+      }),
+
+      React.createElement(TouchableOpacity, {
+        onPress: handleRecenter,
+        style: {
+          position: 'absolute',
+          right: 16,
+          bottom: Platform.OS === 'web' ? 100 : insets.bottom + 90,
+          width: 52,
+          height: 52,
+          borderRadius: 26,
+          backgroundColor: cardColor,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.18,
+          shadowRadius: 10,
+          elevation: 8
+        },
+        componentId: 'recenter-fab'
+      },
+        React.createElement(MaterialIcons, { name: 'my-location', size: 24, color: currentLocation ? primaryColor : textSecondary })
+      )
+    );
+  };
+  // @end:LocationMapScreen
+
+  // @section:styles @depends:[theme]
+  const styles = StyleSheet.create({
+    fill: {
+      flex: 1
+    },
+    center: {
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  });
+  // @end:styles
+
+  // @section:return @depends:[LocationMapScreen]
+  return React.createElement(View, { style: { flex: 1, width: '100%', height: '100%' } },
+    React.createElement(LocationMapScreen)
+  );
+  // @end:return
+};
+return ComponentFunction;

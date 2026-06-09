@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Arşivim</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="archive">
+  <div class="container">
+    <div class="card" style="margin-top:10px">
+      <div class="badge">📚 Arşivim</div>
+      <h2 style="margin-top:10px">Film/Dizi ekle</h2>
+      <p>Basit: ad + tür + puan + kısa not.</p>
+
+      <div style="height:12px"></div>
+
+      <div class="row">
+        <div>
+          <label class="pill">Ad</label>
+          <input class="input" id="title" placeholder="Örn: Interstellar" />
+        </div>
+        <div>
+          <label class="pill">Tür</label>
+          <select class="select" id="kind">
+            <option>Film</option>
+            <option>Dizi</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="row">
+        <div>
+          <label class="pill">Yıl (opsiyon)</label>
+          <input class="input" id="year" type="number" placeholder="2014" />
+        </div>
+        <div>
+          <label class="pill">Puan (1-10)</label>
+          <input class="input" id="rating" type="number" min="1" max="10" placeholder="9" />
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <label class="pill">Not/İnceleme (opsiyon)</label>
+      <textarea class="textarea" id="text" placeholder="Kısa yorum..."></textarea>
+
+      <div style="height:12px"></div>
+      <button class="btn primary" id="addBtn">Arşive ekle</button>
+    </div>
+
+    <div style="height:14px"></div>
+
+    <div class="card">
+      <div class="row" style="align-items:end">
+        <div>
+          <label class="pill">Ara</label>
+          <input class="input" id="q" placeholder="Arşivde ara..." />
+        </div>
+        <div>
+          <label class="pill">Filtre</label>
+          <select class="select" id="kindFilter">
+            <option value="all">Tümü</option>
+            <option value="Film">Film</option>
+            <option value="Dizi">Dizi</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="list" id="archiveList"></div>
+    </div>
+
+    <div class="footer">İpucu: “Paylaş” deyince fotoğraf ekleyip topluluğa gönderebilirsin.</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
